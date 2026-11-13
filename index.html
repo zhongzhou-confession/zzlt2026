@@ -97,7 +97,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     <button id="refreshBtn" type="button">↻ 刷新</button>
   </div>
   <div id="feed"><div class="empty">正在加载表白……</div></div>
-  <footer>友善发言，理性表白 · 校园表白墙</footer>
+  <footer>友善发言，理性表白 · 校园表白墙 v2</footer>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -113,8 +113,11 @@ try {
 } catch (e) { clientError = (e && e.message) || "组件加载失败"; }
 
 var isAnon = true;
-var deviceId = localStorage.getItem("cb_device_id");
-if (!deviceId) { deviceId = "d_" + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem("cb_device_id", deviceId); }
+var deviceId = null;
+try {
+  deviceId = localStorage.getItem("cb_device_id");
+  if (!deviceId) { deviceId = "d_" + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem("cb_device_id", deviceId); }
+} catch (e) { deviceId = "d_" + Math.random().toString(36).slice(2) + Date.now().toString(36); }
 
 function toast(msg) {
   var t = document.getElementById("toast");
