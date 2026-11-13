@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>中州高级中学 · 校园表白墙</title>
+<title>中州高级中学论坛</title>
 <script>
 /**
  * Skipped minification because the original files appears to be already minified.
@@ -25,19 +25,50 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
 </script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; background: #fff5f7; color: #333; min-height: 100vh; }
-  header { background: linear-gradient(135deg, #ff5e7a, #ff8a5c); color: #fff; text-align: center; padding: 28px 16px 22px; }
-  header h1 { font-size: 26px; letter-spacing: 2px; }
-  header p { font-size: 13px; opacity: .92; margin-top: 6px; }
-  .wrap { max-width: 640px; margin: 0 auto; padding: 16px 14px 40px; }
-  .card { background: #fff; border-radius: 14px; box-shadow: 0 2px 10px rgba(255, 94, 122, .12); padding: 16px; margin-bottom: 14px; }
+  body { font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; background: linear-gradient(180deg, #fff5f7 0%, #fff9f0 60%, #f3f0ff 100%); color: #333; min-height: 100vh; }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 14px 14px 40px; }
+  /* ---- top bar ---- */
+  .topbar { position: sticky; top: 0; z-index: 50; display: flex; justify-content: space-between; align-items: center; max-width: 680px; margin: 0 auto; padding: 10px 14px; background: rgba(255,255,255,.92); border-bottom: 1px solid #ffe3e9; }
+  .topbar button { border: 0; background: none; color: #ff5e7a; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .topbar span { font-weight: 800; font-size: 15px; }
+  /* ---- hero / cover ---- */
+  .hero { position: relative; overflow: hidden; background: linear-gradient(135deg, #ff5e7a, #ff8a5c 55%, #b388ff); border-radius: 22px; color: #fff; padding: 36px 20px 26px; text-align: center; box-shadow: 0 8px 24px rgba(255,94,122,.35); margin-bottom: 16px; }
+  .hero h1 { font-size: 26px; letter-spacing: 2px; text-shadow: 0 2px 8px rgba(0,0,0,.15); }
+  .hero p { margin-top: 8px; font-size: 14px; opacity: .95; }
+  .hero-badges { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .hero-badges span { background: rgba(255,255,255,.22); border: 1px solid rgba(255,255,255,.4); border-radius: 999px; padding: 5px 12px; font-size: 13px; }
+  .float { position: absolute; font-size: 34px; opacity: .25; animation: bob 4s ease-in-out infinite; }
+  @keyframes bob { 0%,100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-10px) rotate(8deg); } }
+  .sec-title { font-size: 16px; font-weight: 800; margin: 20px 2px 10px; }
+  /* ---- section grid ---- */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (min-width: 560px) { .grid { grid-template-columns: 1fr 1fr 1fr; } }
+  .sec-card { background: #fff; border-radius: 18px; padding: 16px 14px; box-shadow: 0 3px 14px rgba(255,94,122,.10); cursor: pointer; border-top: 5px solid var(--c, #ff5e7a); transition: transform .15s; }
+  .sec-card:active { transform: scale(.97); }
+  .sec-card .emoji { font-size: 34px; }
+  .sec-card h3 { font-size: 16px; margin: 8px 0 4px; }
+  .sec-card p { font-size: 12.5px; color: #888; line-height: 1.5; min-height: 36px; }
+  .sec-card .meta { margin-top: 10px; font-size: 12px; color: #bbb; }
+  .sec-card .latest { margin-top: 6px; font-size: 12px; color: #666; background: #fff5f7; border-radius: 8px; padding: 6px 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* ---- home latest ---- */
+  .mini-post { background: #fff; border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(255,94,122,.08); display: flex; gap: 10px; align-items: flex-start; }
+  .mini-post .tag { flex: none; font-size: 12px; background: #fff0f3; border-radius: 999px; padding: 3px 8px; }
+  .mini-post .txt { font-size: 14px; line-height: 1.6; flex: 1; word-break: break-word; }
+  .mini-post .tm { font-size: 11px; color: #bbb; white-space: nowrap; }
+  /* ---- section header ---- */
+  .sec-header { border-radius: 20px; color: #fff; padding: 26px 18px 20px; margin-bottom: 14px; box-shadow: 0 6px 18px rgba(0,0,0,.12); position: relative; overflow: hidden; }
+  .sec-header h2 { font-size: 22px; }
+  .sec-header p { font-size: 13px; opacity: .92; margin-top: 6px; }
+  .sec-header .back { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,.28); border: 0; color: #fff; border-radius: 999px; padding: 6px 12px; font-size: 13px; cursor: pointer; }
+  /* ---- form card ---- */
+  .card { background: #fff; border-radius: 16px; box-shadow: 0 2px 10px rgba(255,94,122,.12); padding: 16px; margin-bottom: 14px; }
   .card h2 { font-size: 16px; margin-bottom: 10px; }
   .row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
   .seg { display: flex; border: 1.5px solid #ff5e7a; border-radius: 999px; overflow: hidden; }
   .seg button { border: 0; background: #fff; color: #ff5e7a; font-size: 14px; padding: 7px 16px; cursor: pointer; }
   .seg button.on { background: #ff5e7a; color: #fff; }
-  input[type=text], textarea { width: 100%; border: 1.5px solid #ffd3dc; border-radius: 10px; padding: 10px 12px; font-size: 15px; outline: none; font-family: inherit; }
-  input[type=text]:focus, textarea:focus { border-color: #ff5e7a; }
+  input[type=text], input[type=password], textarea { width: 100%; border: 1.5px solid #ffd3dc; border-radius: 10px; padding: 10px 12px; font-size: 15px; outline: none; font-family: inherit; }
+  input[type=text]:focus, input[type=password]:focus, textarea:focus { border-color: #ff5e7a; }
   textarea { min-height: 84px; resize: vertical; }
   .hint { font-size: 12px; color: #999; }
   .filelabel { display: inline-block; background: #fff0f3; color: #ff5e7a; border: 1.5px dashed #ffb3c1; border-radius: 10px; padding: 8px 14px; font-size: 14px; cursor: pointer; }
@@ -48,30 +79,99 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   .toolbar { display: flex; justify-content: space-between; align-items: center; margin: 4px 2px 12px; }
   .toolbar h2 { font-size: 16px; }
   .toolbar button { border: 0; background: none; color: #ff5e7a; font-size: 14px; cursor: pointer; }
-  .post { background: #fff; border-radius: 14px; box-shadow: 0 2px 10px rgba(255, 94, 122, .10); padding: 16px; margin-bottom: 14px; }
-  .post .meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  /* ---- posts ---- */
+  .post { background: #fff; border-radius: 14px; border-left: 5px solid #ff5e7a; box-shadow: 0 2px 10px rgba(255,94,122,.10); padding: 16px; margin-bottom: 14px; }
+  .post .meta { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .post .avatar { flex: none; width: 34px; height: 34px; border-radius: 50%; color: #fff; font-size: 17px; display: flex; align-items: center; justify-content: center; }
   .post .who { font-weight: bold; font-size: 15px; color: #ff5e7a; }
   .post .who.anon { color: #999; }
-  .post .time { font-size: 12px; color: #aaa; }
+  .post .time { font-size: 12px; color: #aaa; margin-left: auto; }
+  .post .post-title { font-size: 16px; font-weight: 800; margin-bottom: 6px; }
   .post .text { font-size: 15px; line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
   .post img { width: 100%; border-radius: 10px; margin-top: 10px; display: block; }
-  .post .actions { margin-top: 12px; display: flex; gap: 10px; }
+  .post .actions { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
   .like { border: 1.5px solid #ffd3dc; background: #fff; color: #ff5e7a; border-radius: 999px; padding: 6px 14px; font-size: 14px; cursor: pointer; }
   .like.liked { background: #ff5e7a; color: #fff; border-color: #ff5e7a; }
+  .report, .del { border: 1.5px solid #eee; background: #fff; color: #999; border-radius: 999px; padding: 6px 12px; font-size: 13px; cursor: pointer; }
+  .del { color: #d32f2f; border-color: #ffcdd2; }
+  .report-box { margin-top: 10px; background: #fff8f8; border: 1px dashed #ffb3c1; border-radius: 12px; padding: 10px; }
+  .reason-chip { display: inline-block; border: 1.5px solid #ffb3c1; background: #fff; color: #ff5e7a; border-radius: 999px; padding: 5px 12px; font-size: 13px; margin: 3px; cursor: pointer; }
+  .reason-chip.cancel { border-color: #ddd; color: #999; }
+  /* ---- ranking ---- */
+  .rank-item { padding: 6px 0; }
+  .rank-row { display: flex; align-items: center; gap: 10px; }
+  .rank-badge { font-size: 20px; width: 34px; text-align: center; flex: none; }
+  .rank-name { font-weight: 700; flex: 1; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rank-votes { font-size: 13px; color: #ff5e7a; font-weight: 700; white-space: nowrap; }
+  .rank-bar { height: 8px; border-radius: 99px; background: #ffe3e9; margin: 6px 0 4px 44px; overflow: hidden; }
+  .rank-bar i { display: block; height: 100%; background: linear-gradient(90deg, #ff5e7a, #ff8a5c); border-radius: 99px; }
+  /* ---- disclaimer ---- */
+  .overlay { position: fixed; inset: 0; background: rgba(40,10,20,.55); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .dlg { background: #fff; border-radius: 22px; max-width: 520px; width: 100%; padding: 26px 22px; text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,.3); max-height: 88vh; overflow-y: auto; }
+  .dlg-emoji { font-size: 44px; }
+  .dlg h2 { font-size: 20px; margin: 10px 0; }
+  .dlg-text { text-align: left; font-size: 14px; line-height: 1.9; color: #555; background: #fff5f7; border-radius: 12px; padding: 14px 16px; margin: 12px 0 18px; }
+  .dlg button { width: 100%; border: 0; background: linear-gradient(135deg, #ff5e7a, #ff8a5c); color: #fff; font-size: 16px; font-weight: 700; padding: 13px; border-radius: 999px; cursor: pointer; }
+  /* ---- admin ---- */
+  .admin-row { background: #fff; border-radius: 14px; padding: 14px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.08); border-left: 4px solid #d32f2f; }
+  .admin-row .ip { font-family: monospace; font-size: 12px; color: #888; background: #f5f5f5; border-radius: 6px; padding: 2px 6px; }
+  .btn-danger { border: 0; background: #d32f2f; color: #fff; border-radius: 999px; padding: 7px 16px; font-size: 14px; cursor: pointer; }
+  .btn-ghost { border: 1.5px solid #ddd; background: #fff; color: #666; border-radius: 999px; padding: 6px 14px; font-size: 14px; cursor: pointer; }
+  .mini-prompt { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%); background: #fff; border-radius: 14px; box-shadow: 0 8px 30px rgba(0,0,0,.25); padding: 12px; display: flex; gap: 8px; z-index: 90; width: calc(100% - 40px); max-width: 420px; }
+  .mini-prompt input { flex: 1; }
+  .mini-prompt button { border: 0; background: #ff5e7a; color: #fff; border-radius: 999px; padding: 8px 14px; font-size: 14px; cursor: pointer; }
+  .mini-prompt button.ghost { background: #fff; color: #999; border: 1.5px solid #ddd; }
   .empty { text-align: center; color: #aaa; font-size: 14px; padding: 30px 0; }
-  .toast { position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%); background: rgba(0,0,0,.8); color: #fff; padding: 10px 18px; border-radius: 999px; font-size: 14px; display: none; z-index: 99; white-space: nowrap; }
+  .toast { position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%); background: rgba(0,0,0,.8); color: #fff; padding: 10px 18px; border-radius: 999px; font-size: 14px; display: none; z-index: 99; white-space: nowrap; max-width: 92vw; overflow: hidden; text-overflow: ellipsis; }
   footer { text-align: center; font-size: 12px; color: #bbb; padding: 10px 0 30px; }
+  footer a { color: #ff5e7a; text-decoration: none; margin-left: 8px; }
 </style>
 </head>
 <body>
-<header>
-  <h1>💌 中州高级中学表白墙</h1>
-  <p>匿名或实名，把想说的话留在这里</p>
+
+<!-- Disclaimer overlay -->
+<div id="disclaimer" class="overlay" style="display:none">
+  <div class="dlg">
+    <div class="dlg-emoji">📜</div>
+    <h2>中州高级中学论坛</h2>
+    <p class="dlg-text">中州高级中学论坛使用声明：1、本论坛为本校同学自发建立的校园交流平台，仅供本校同学交流使用。2、所有帖子内容由发帖人自行承担责任；请勿发布违法违规、色情暴力、人身攻击、造谣传谣、广告引流等内容。3、发帖即表示同意论坛记录发帖 IP，仅用于处理违规内容，不对外公开。4、管理员有权删除违规内容、处理举报；每月 1 日将清理全部帖子。5、未成年人请在家长指导下使用。</p>
+    <button id="agreeBtn" type="button">我已阅读并同意，进入论坛</button>
+  </div>
+</div>
+
+<!-- Sticky top bar -->
+<header class="topbar">
+  <button id="homeBtn" type="button">🏠 首页</button>
+  <span id="topTitle">🏫 中州高级中学论坛</span>
+  <button id="topRefresh" type="button">↻ 刷新</button>
 </header>
 
-<div class="wrap">
+<!-- Home / cover view -->
+<main id="viewHome" class="wrap">
+  <section class="hero">
+    <span class="float" style="top:14px;left:16px">💌</span>
+    <span class="float" style="top:20px;right:22px;animation-delay:.8s">👑</span>
+    <span class="float" style="bottom:16px;left:30px;animation-delay:1.6s">🌳</span>
+    <span class="float" style="bottom:22px;right:26px;animation-delay:2.4s">🎒</span>
+    <h1>🏫 中州高级中学论坛</h1>
+    <p>属于我们自己的校园小天地 ✨ 表白 · 竞选 · 树洞 · 失物 · 学习 · 闲聊</p>
+    <div class="hero-badges"><span>💌 表白墙</span><span>👑 校草校花</span><span>🌳 树洞</span><span>🎒 失物招领</span><span>📚 学习互助</span><span>💬 闲聊灌水</span></div>
+  </section>
+
+  <div class="sec-title">📌 板块导航</div>
+  <div id="secGrid" class="grid"></div>
+
+  <div class="sec-title">🔥 全站最新</div>
+  <div id="homeLatest"><div class="empty">正在加载最新动态……</div></div>
+</main>
+
+<!-- Section view -->
+<main id="viewSection" class="wrap" style="display:none">
+  <section id="secHeader" class="sec-header"></section>
+  <div id="rankBox"></div>
+
   <div class="card">
-    <h2>写下你的表白</h2>
+    <h2 id="formTitle">发帖</h2>
     <div class="row">
       <div class="seg">
         <button id="btnAnon" class="on" type="button">匿名</button>
@@ -82,22 +182,45 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     <div class="row" id="nameRow" style="display:none">
       <input type="text" id="authorName" maxlength="20" placeholder="你的名字（比如：高一三班 小明）">
     </div>
+    <div class="row" id="titleRow" style="display:none">
+      <input type="text" id="postTitle" maxlength="20" placeholder="候选人姓名（比如：高一三班 小明）">
+    </div>
     <div class="row">
-      <textarea id="content" maxlength="500" placeholder="想对 TA 说的话……（最多 500 字）"></textarea>
+      <textarea id="content" maxlength="500" placeholder="写点什么……（最多 500 字）"></textarea>
     </div>
     <div class="row">
       <label class="filelabel">📷 上传照片<input type="file" id="photo" accept="image/*"></label>
       <span id="fileName"></span>
     </div>
-    <button class="submit" id="submitBtn" type="button">发布表白</button>
+    <button class="submit" id="submitBtn" type="button">发布</button>
   </div>
 
   <div class="toolbar">
-    <h2>💬 表白墙</h2>
+    <h2 id="feedTitle">💬 帖子</h2>
     <button id="refreshBtn" type="button">↻ 刷新</button>
   </div>
-  <div id="feed"><div class="empty">正在加载表白……</div></div>
-  <footer>友善发言，理性表白 · 校园表白墙 v2</footer>
+  <div id="feed"><div class="empty">正在加载帖子……</div></div>
+</main>
+
+<!-- Admin view -->
+<main id="viewAdmin" class="wrap" style="display:none">
+  <section class="card">
+    <h2>🛡️ 管理入口</h2>
+    <p style="font-size:13px;color:#888;line-height:1.7">举报处理 · 仅管理员可见 · 被举报的帖子、举报理由和发帖 IP 都在这里</p>
+    <div style="margin-top:10px"><button class="btn-ghost" id="adminReload" type="button">↻ 刷新举报</button></div>
+  </section>
+  <div id="adminList"><div class="empty">正在加载举报……</div></div>
+</main>
+
+<footer>
+  <span>友善发言，理性表白 · 中州高级中学论坛 v3</span>
+  <a href="#" id="adminLink">管理</a>
+</footer>
+
+<div id="adminPrompt" class="mini-prompt" style="display:none">
+  <input type="password" id="adminTokenInput" placeholder="输入管理口令">
+  <button id="adminGo" type="button">进入</button>
+  <button id="adminCancel" class="ghost" type="button">取消</button>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -112,17 +235,54 @@ try {
   } else { clientError = "组件加载失败"; }
 } catch (e) { clientError = (e && e.message) || "组件加载失败"; }
 
-var isAnon = true;
+var SECTIONS = [
+  { slug: "confession", emoji: "💌", name: "表白墙", color: "#ff5e7a", desc: "不敢说的话，来这里说", formTitle: "写下你的表白", formPh: "想对 TA 说的话……（最多 500 字）" },
+  { slug: "contest", emoji: "👑", name: "校草校花竞选", color: "#f5a623", desc: "为你心中的校草校花投上一票", formTitle: "提名校草 / 校花", formPh: "推荐理由：TA 哪里最吸引你？" },
+  { slug: "treehole", emoji: "🌳", name: "树洞吐槽", color: "#43a047", desc: "匿名树洞，悄悄话都装得下", formTitle: "说出你的秘密", formPh: "这里很安全，悄悄说吧……" },
+  { slug: "lostfound", emoji: "🎒", name: "失物招领", color: "#1e88e5", desc: "丢了东西？捡到东西？来这里", formTitle: "发布失物招领", formPh: "丢了什么 / 捡到了什么？写清楚时间地点……" },
+  { slug: "study", emoji: "📚", name: "学习互助", color: "#8e24aa", desc: "作业难题、考试经验一起聊", formTitle: "发起学习求助", formPh: "哪道题不会？哪个知识点想聊聊？" },
+  { slug: "chat", emoji: "💬", name: "闲聊灌水", color: "#fb8c00", desc: "什么都聊，快乐就好", formTitle: "随便聊聊", formPh: "想说什么就说什么～" }
+];
+var REPORT_REASONS = ["广告引流", "辱骂攻击", "色情低俗", "违法信息", "其他"];
+
+/* ---------- guarded storage (works even when the in-app browser blocks it) ---------- */
+function lsGet(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } }
+function lsSet(k, v) { try { window.localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+function ssGet(k) { try { return window.sessionStorage.getItem(k); } catch (e) { return null; } }
+function ssSet(k, v) { try { window.sessionStorage.setItem(k, v); return true; } catch (e) { return false; } }
+
 var deviceId = null;
 try {
-  deviceId = localStorage.getItem("cb_device_id");
-  if (!deviceId) { deviceId = "d_" + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem("cb_device_id", deviceId); }
+  deviceId = lsGet("cb_device_id");
+  if (!deviceId) { deviceId = "d_" + Math.random().toString(36).slice(2) + Date.now().toString(36); lsSet("cb_device_id", deviceId); }
 } catch (e) { deviceId = "d_" + Math.random().toString(36).slice(2) + Date.now().toString(36); }
 
+function myPosts() { try { return JSON.parse(lsGet("cb_my_posts") || "[]"); } catch (e) { return []; } }
+function addMyPost(id) { var a = myPosts(); if (a.indexOf(id) < 0) a.push(id); lsSet("cb_my_posts", JSON.stringify(a)); }
+function isMyPost(id) { return myPosts().indexOf(id) >= 0; }
+
+/* ---------- API helpers (plain fetch, exact contract endpoints) ---------- */
+function authHeaders() { return { "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY }; }
+function jsonHeaders() { var h = authHeaders(); h["Content-Type"] = "application/json"; return h; }
+async function apiGet(path) {
+  var res = await fetch(SUPABASE_URL + path, { headers: authHeaders() });
+  var txt = await res.text();
+  if (!res.ok) throw new Error("请求失败（" + res.status + "）");
+  try { return JSON.parse(txt); } catch (e) { return txt; }
+}
+async function apiPost(path, body) {
+  var res = await fetch(SUPABASE_URL + path, { method: "POST", headers: jsonHeaders(), body: JSON.stringify(body) });
+  var txt = await res.text();
+  var j = null; try { j = JSON.parse(txt); } catch (e) {}
+  if (!res.ok) throw new Error((j && (j.error || j.message)) || ("请求失败（" + res.status + "）"));
+  return j;
+}
+
+/* ---------- small utils ---------- */
 function toast(msg) {
   var t = document.getElementById("toast");
   t.textContent = msg; t.style.display = "block";
-  setTimeout(function(){ t.style.display = "none"; }, 2200);
+  setTimeout(function () { t.style.display = "none"; }, 2400);
 }
 function esc(s) {
   return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -138,92 +298,486 @@ function timeAgo(ts) {
   if (d < 30) return d + "天前";
   return new Date(ts).toLocaleDateString();
 }
+function sectionBySlug(slug) {
+  for (var i = 0; i < SECTIONS.length; i++) if (SECTIONS[i].slug === slug) return SECTIONS[i];
+  return null;
+}
 
-document.getElementById("btnAnon").onclick = function() {
+/* ---------- state ---------- */
+var currentSection = null;
+var adminToken = null;
+var feedPosts = [];
+var likeCount = {};
+var likedByMe = {};
+
+/* ---------- views ---------- */
+function showView(v) {
+  document.getElementById("viewHome").style.display = v === "home" ? "block" : "none";
+  document.getElementById("viewSection").style.display = v === "section" ? "block" : "none";
+  document.getElementById("viewAdmin").style.display = v === "admin" ? "block" : "none";
+  window.scrollTo(0, 0);
+}
+function goHome() {
+  currentSection = null;
+  document.getElementById("topTitle").textContent = "🏫 中州高级中学论坛";
+  showView("home");
+  loadHome();
+}
+
+/* ---------- disclaimer ---------- */
+function checkDisclaimer() {
+  if (lsGet("cb_disclaimer_agreed") === "1") {
+    document.getElementById("disclaimer").style.display = "none";
+  } else {
+    document.getElementById("disclaimer").style.display = "flex";
+  }
+}
+document.getElementById("agreeBtn").onclick = function () {
+  lsSet("cb_disclaimer_agreed", "1");
+  document.getElementById("disclaimer").style.display = "none";
+};
+
+/* ---------- anonymous / real-name toggle (pure DOM: works even if backend is down) ---------- */
+var isAnon = true;
+document.getElementById("btnAnon").onclick = function () {
   isAnon = true;
   this.classList.add("on"); document.getElementById("btnReal").classList.remove("on");
   document.getElementById("nameRow").style.display = "none";
   document.getElementById("modeHint").textContent = "匿名发帖，不显示你的名字";
 };
-document.getElementById("btnReal").onclick = function() {
+document.getElementById("btnReal").onclick = function () {
   isAnon = false;
   this.classList.add("on"); document.getElementById("btnAnon").classList.remove("on");
   document.getElementById("nameRow").style.display = "flex";
   document.getElementById("modeHint").textContent = "实名发帖，会显示你的名字";
 };
-document.getElementById("photo").onchange = function() {
+document.getElementById("photo").onchange = function () {
   document.getElementById("fileName").textContent = this.files.length ? this.files[0].name : "";
 };
+document.getElementById("homeBtn").onclick = goHome;
+document.getElementById("refreshBtn").onclick = function () { if (currentSection) loadFeed(currentSection); };
+document.getElementById("topRefresh").onclick = function () { if (currentSection) loadFeed(currentSection); else loadHome(); };
 
-async function loadFeed() {
-  var feed = document.getElementById("feed");
-  if (!client) { feed.innerHTML = '<div class="empty">连接服务器失败，请检查网络后点刷新重试' + (clientError ? "（" + esc(clientError) + "）" : "") + "</div>"; return; }
-  var res = await client.from("confessions").select("*").order("created_at", { ascending: false }).limit(100);
-  if (res.error) { feed.innerHTML = '<div class="empty">加载失败，请刷新重试（' + esc(res.error.message) + '）</div>'; return; }
-  var posts = res.data || [];
-  var likesRes = await client.from("confession_likes").select("confession_id,device_id");
-  var likeCount = {}, likedByMe = {};
-  (likesRes.data || []).forEach(function(l) {
-    likeCount[l.confession_id] = (likeCount[l.confession_id] || 0) + 1;
-    if (l.device_id === deviceId) likedByMe[l.confession_id] = true;
-  });
-  if (!posts.length) { feed.innerHTML = '<div class="empty">墙还是空的，来发第一条表白吧 💌</div>'; return; }
-  feed.innerHTML = posts.map(function(p) {
-    var who = p.is_anonymous ? "匿名" : esc(p.author_name || "实名同学");
-    var whoCls = p.is_anonymous ? "who anon" : "who";
-    var img = p.image_url ? '<img src="' + esc(p.image_url) + '" loading="lazy" alt="表白照片">' : "";
-    var liked = likedByMe[p.id];
-    return '<div class="post">' +
-      '<div class="meta"><span class="' + whoCls + '">' + (p.is_anonymous ? "🕶️ " : "👤 ") + who + '</span><span class="time">' + timeAgo(p.created_at) + '</span></div>' +
-      '<div class="text">' + esc(p.content) + '</div>' + img +
-      '<div class="actions"><button class="like' + (liked ? " liked" : "") + '" data-id="' + p.id + '" ' + (liked ? "disabled" : "") + '>' + (liked ? "❤️ 已点赞" : "🤍 点赞") + ' · ' + (likeCount[p.id] || 0) + '</button></div>' +
-      '</div>';
+/* ---------- home / cover ---------- */
+async function loadHome() {
+  var grid = document.getElementById("secGrid");
+  grid.innerHTML = SECTIONS.map(function (s) {
+    return '<div class="sec-card" data-slug="' + s.slug + '" style="--c:' + s.color + '">' +
+      '<div class="emoji">' + s.emoji + '</div><h3>' + s.name + '</h3><p>' + s.desc + '</p>' +
+      '<div class="meta" data-count="' + s.slug + '">帖子加载中…</div>' +
+      '<div class="latest" data-latest="' + s.slug + '"></div></div>';
   }).join("");
-  feed.querySelectorAll(".like").forEach(function(btn) {
-    btn.onclick = async function() {
-      var id = btn.getAttribute("data-id");
-      btn.disabled = true;
-      var r = await client.from("confession_likes").insert({ confession_id: id, device_id: deviceId });
-      if (r.error) { toast("点赞失败，请重试"); btn.disabled = false; return; }
-      loadFeed();
-    };
+  grid.querySelectorAll(".sec-card").forEach(function (card) {
+    card.onclick = function () { openSection(card.getAttribute("data-slug")); };
   });
+  try {
+    var posts = await apiGet("/rest/v1/posts?select=section,content,author_name,is_anonymous,created_at&order=created_at.desc&limit=100");
+    var counts = {}, latest = {};
+    (posts || []).forEach(function (p) {
+      counts[p.section] = (counts[p.section] || 0) + 1;
+      if (!latest[p.section]) latest[p.section] = p;
+    });
+    SECTIONS.forEach(function (s) {
+      var c = grid.querySelector('[data-count="' + s.slug + '"]');
+      if (c) c.textContent = "📝 " + (counts[s.slug] || 0) + " 条帖子";
+      var l = grid.querySelector('[data-latest="' + s.slug + '"]');
+      var lp = latest[s.slug];
+      if (l) l.textContent = lp ? ("最新：" + (lp.is_anonymous ? "匿名" : (lp.author_name || "同学")) + "：" + lp.content.slice(0, 18)) : "还没有帖子，来发第一条吧";
+    });
+    var hl = document.getElementById("homeLatest");
+    var top5 = (posts || []).slice(0, 5);
+    hl.innerHTML = top5.length ? top5.map(function (p) {
+      var s = sectionBySlug(p.section) || { emoji: "💬", name: "", color: "#999" };
+      return '<div class="mini-post"><span class="tag">' + s.emoji + ' ' + s.name + '</span><span class="txt">' + esc(p.content) + '</span><span class="tm">' + timeAgo(p.created_at) + '</span></div>';
+    }).join("") : '<div class="empty">论坛还是空的，来发第一条吧 🌸</div>';
+  } catch (e) {
+    SECTIONS.forEach(function (s) {
+      var c = grid.querySelector('[data-count="' + s.slug + '"]');
+      if (c) c.textContent = "暂时无法加载";
+    });
+    document.getElementById("homeLatest").innerHTML = '<div class="empty">加载失败，请检查网络后点刷新重试</div>';
+  }
 }
 
-document.getElementById("refreshBtn").onclick = loadFeed;
+/* ---------- section view ---------- */
+function openSection(slug) {
+  currentSection = slug;
+  var s = sectionBySlug(slug);
+  document.getElementById("topTitle").textContent = s.emoji + " " + s.name;
+  var h = document.getElementById("secHeader");
+  h.style.background = "linear-gradient(135deg," + s.color + "," + s.color + "cc)";
+  h.innerHTML = '<button class="back" id="backBtn" type="button">← 首页</button><h2>' + s.emoji + ' ' + s.name + '</h2><p>' + s.desc + '</p>';
+  document.getElementById("backBtn").onclick = goHome;
+  document.getElementById("formTitle").textContent = s.formTitle;
+  document.getElementById("content").placeholder = s.formPh;
+  document.getElementById("titleRow").style.display = slug === "contest" ? "flex" : "none";
+  document.getElementById("rankBox").innerHTML = "";
+  showView("section");
+  loadFeed(slug);
+}
 
-document.getElementById("submitBtn").onclick = async function() {
+async function loadFeed(slug) {
+  var feed = document.getElementById("feed");
+  feed.innerHTML = '<div class="empty">正在加载帖子……</div>';
+  try {
+    var posts = await apiGet("/rest/v1/posts?select=id,section,title,content,image_url,author_name,is_anonymous,created_at&section=eq." + encodeURIComponent(slug) + "&order=created_at.desc&limit=100");
+    var likes = [];
+    try { likes = await apiGet("/rest/v1/post_likes?select=post_id,device_id"); } catch (e) { likes = []; }
+    likeCount = {}; likedByMe = {};
+    (likes || []).forEach(function (l) {
+      likeCount[l.post_id] = (likeCount[l.post_id] || 0) + 1;
+      if (l.device_id === deviceId) likedByMe[l.post_id] = true;
+    });
+    feedPosts = posts || [];
+    renderFeed(slug);
+    if (slug === "contest") renderRank();
+  } catch (e) {
+    feed.innerHTML = '<div class="empty">加载失败，请检查网络后点刷新重试</div>';
+  }
+}
+
+function renderFeed(slug) {
+  var s = sectionBySlug(slug);
+  var feed = document.getElementById("feed");
+  if (!feedPosts.length) { feed.innerHTML = '<div class="empty">这里还是空的，来发第一条吧 ' + s.emoji + '</div>'; return; }
+  feed.innerHTML = feedPosts.map(function (p) { return postHtml(p, s); }).join("");
+}
+
+function postHtml(p, s) {
+  var who = p.is_anonymous ? "匿名" : esc(p.author_name || "实名同学");
+  var av = p.is_anonymous ? "🕶️" : esc((p.author_name || "同").slice(0, 1));
+  var title = p.title ? '<div class="post-title">👑 ' + esc(p.title) + '</div>' : "";
+  var img = p.image_url ? '<img src="' + esc(p.image_url) + '" loading="lazy" alt="帖子图片">' : "";
+  var liked = likedByMe[p.id];
+  var isContest = s.slug === "contest";
+  var likeLabel = isContest ? (liked ? "❤️ 已投票" : "❤️ 投票") : (liked ? "❤️ 已点赞" : "🤍 点赞");
+  var del = isMyPost(p.id) ? '<button class="del" data-id="' + p.id + '" type="button">🗑 删除</button>' : "";
+  return '<div class="post" style="border-left-color:' + s.color + '">' +
+    '<div class="meta"><span class="avatar" style="background:' + s.color + '">' + av + '</span>' +
+    '<span class="who' + (p.is_anonymous ? " anon" : "") + '">' + who + '</span>' +
+    '<span class="time">' + timeAgo(p.created_at) + '</span></div>' +
+    title + '<div class="text">' + esc(p.content) + '</div>' + img +
+    '<div class="actions">' +
+    '<button class="like' + (liked ? " liked" : "") + '" data-id="' + p.id + '" type="button"' + (liked ? " disabled" : "") + '>' + likeLabel + ' · ' + (likeCount[p.id] || 0) + '</button>' +
+    '<button class="report" data-id="' + p.id + '" type="button">🚩 举报</button>' + del +
+    '</div>' +
+    '<div class="report-box" data-report="' + p.id + '" style="display:none"><div style="font-size:13px;color:#999;margin-bottom:6px">请选择举报理由：</div>' +
+    REPORT_REASONS.map(function (r) { return '<button class="reason-chip" data-id="' + p.id + '" data-reason="' + r + '" type="button">' + r + '</button>'; }).join("") +
+    '<button class="reason-chip cancel" data-id="' + p.id + '" type="button">取消</button></div>' +
+    '</div>';
+}
+
+/* ---------- contest ranking (top 5 by votes) ---------- */
+function renderRank() {
+  var box = document.getElementById("rankBox");
+  var ranked = feedPosts.slice().sort(function (a, b) { return (likeCount[b.id] || 0) - (likeCount[a.id] || 0); }).slice(0, 5);
+  var max = ranked.length ? (likeCount[ranked[0].id] || 0) : 0;
+  var badges = ["👑", "🥇", "🥈", "🥉", "5️⃣"];
+  box.innerHTML = '<div class="card"><h2>🏆 本月排行榜</h2>' + (ranked.length ? ranked.map(function (p, i) {
+    var v = likeCount[p.id] || 0;
+    var pct = max > 0 ? Math.round(v / max * 100) : 0;
+    return '<div class="rank-item"><div class="rank-row"><span class="rank-badge">' + badges[i] + '</span>' +
+      '<span class="rank-name">' + esc(p.title || "未命名") + '</span>' +
+      '<span class="rank-votes">❤️ ' + v + ' 票</span></div>' +
+      '<div class="rank-bar"><i style="width:' + pct + '%"></i></div></div>';
+  }).join("") : '<div class="empty">还没有提名，来提名第一位吧 👑</div>') + '</div>';
+}
+
+/* ---------- submit post (via edge function: logs IP server-side) ---------- */
+document.getElementById("submitBtn").onclick = async function () {
   var btn = this;
-  if (!client) { toast("连接服务器失败，请检查网络后重试"); return; }
+  if (!currentSection) return;
   var content = document.getElementById("content").value.trim();
-  if (!content) { toast("先写点表白内容吧"); return; }
+  var title = "";
+  if (currentSection === "contest") {
+    title = document.getElementById("postTitle").value.trim();
+    if (!title) { toast("请填写候选人姓名"); return; }
+  }
+  if (!content) { toast("先写点内容吧"); return; }
   var name = isAnon ? null : (document.getElementById("authorName").value.trim() || "实名同学");
   var file = document.getElementById("photo").files[0];
   btn.disabled = true; btn.textContent = "发布中…";
   try {
-    var imageUrl = null;
+    var imageUrl = null, imagePath = null;
     if (file) {
-      var path = Date.now() + "_" + Math.random().toString(36).slice(2) + "_" + file.name.replace(/[^\w.\-]+/g, "_");
-      var up = await client.storage.from("confession-images").upload(path, file);
-      if (up.error) throw new Error("照片上传失败：" + up.error.message);
-      imageUrl = client.storage.from("confession-images").getPublicUrl(path).data.publicUrl;
+      imagePath = Date.now() + "_" + Math.random().toString(36).slice(2) + "_" + file.name.replace(/[^\w.\-]+/g, "_");
+      var up = await fetch(SUPABASE_URL + "/storage/v1/object/confession-images/" + imagePath, {
+        method: "POST",
+        headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY, "Content-Type": file.type || "application/octet-stream" },
+        body: file
+      });
+      if (!up.ok) throw new Error("照片上传失败，请重试");
+      imageUrl = SUPABASE_URL + "/storage/v1/object/public/confession-images/" + imagePath;
     }
-    var ins = await client.from("confessions").insert({
-      content: content, image_url: imageUrl, author_name: name, is_anonymous: isAnon
+    var r = await apiPost("/functions/v1/submit-post", {
+      section: currentSection, title: title || null, content: content,
+      image_url: imageUrl, image_path: imagePath,
+      author_name: name, is_anonymous: isAnon, device_id: deviceId
     });
-    if (ins.error) throw new Error("发布失败：" + ins.error.message);
+    if (!r || r.error) throw new Error((r && r.error) || "发布失败");
+    if (!r.id) throw new Error("发布失败，请重试");
+    addMyPost(r.id);
     document.getElementById("content").value = "";
+    document.getElementById("postTitle").value = "";
     document.getElementById("photo").value = "";
     document.getElementById("fileName").textContent = "";
-    toast("发布成功 💌");
-    loadFeed();
-  } catch (e) {
-    toast(e.message || "发布失败，请重试");
-  }
-  btn.disabled = false; btn.textContent = "发布表白";
+    toast("发布成功 🎉");
+    loadFeed(currentSection);
+  } catch (e) { toast(e.message || "发布失败，请重试"); }
+  btn.disabled = false; btn.textContent = "发布";
 };
 
-loadFeed();
+/* ---------- feed actions: like / report / own delete ---------- */
+document.getElementById("feed").addEventListener("click", function (ev) {
+  var t = ev.target;
+  if (t.classList.contains("like")) { doLike(t); return; }
+  if (t.classList.contains("report")) {
+    var box = document.querySelector('[data-report="' + t.getAttribute("data-id") + '"]');
+    if (box) box.style.display = box.style.display === "none" ? "block" : "none";
+    return;
+  }
+  if (t.classList.contains("reason-chip")) {
+    if (t.classList.contains("cancel")) {
+      var b2 = document.querySelector('[data-report="' + t.getAttribute("data-id") + '"]');
+      if (b2) b2.style.display = "none";
+      return;
+    }
+    doReport(t.getAttribute("data-id"), t.getAttribute("data-reason"), t);
+    return;
+  }
+  if (t.classList.contains("del")) { doDelete(t); return; }
+});
+
+async function doLike(btn) {
+  var id = btn.getAttribute("data-id");
+  btn.disabled = true;
+  try {
+    await apiPost("/rest/v1/post_likes", { post_id: id, device_id: deviceId });
+    likedByMe[id] = true;
+    likeCount[id] = (likeCount[id] || 0) + 1;
+    if (currentSection) { renderFeed(currentSection); if (currentSection === "contest") renderRank(); }
+  } catch (e) { toast("操作失败，请重试"); btn.disabled = false; }
+}
+
+async function doReport(id, reason, chip) {
+  chip.disabled = true;
+  try {
+    await apiPost("/rest/v1/reports", { post_id: id, reason: reason, device_id: deviceId });
+    toast("举报已提交，管理员会处理");
+    var box = document.querySelector('[data-report="' + id + '"]');
+    if (box) box.style.display = "none";
+  } catch (e) { toast("举报失败，请重试"); chip.disabled = false; }
+}
+
+async function doDelete(btn) {
+  var id = btn.getAttribute("data-id");
+  if (btn.getAttribute("data-confirm") !== "1") {
+    btn.setAttribute("data-confirm", "1");
+    btn.textContent = "确认删除？";
+    setTimeout(function () { btn.setAttribute("data-confirm", ""); btn.textContent = "🗑 删除"; }, 3000);
+    return;
+  }
+  btn.disabled = true;
+  try {
+    var r = await apiPost("/rest/v1/rpc/delete_own_post", { p_post_id: id, p_device_id: deviceId });
+    var ok = (r === true) || (r && (r.data === true || r === 1));
+    if (!ok) throw new Error("删除失败");
+    toast("已删除");
+    if (currentSection) loadFeed(currentSection);
+  } catch (e) { toast("删除失败，请重试"); btn.disabled = false; }
+}
+
+/* ---------- admin (password set by the owner; only its SHA-256 hash is stored) ---------- */
+function sha256Hex(str) {
+  function hex(buf) {
+    var b = new Uint8Array(buf), s = "";
+    for (var i = 0; i < b.length; i++) s += ("0" + b[i].toString(16)).slice(-2);
+    return s;
+  }
+  if (window.crypto && crypto.subtle && crypto.subtle.digest) {
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(str)).then(hex);
+  }
+  return Promise.resolve(sha256Sync(str));
+}
+/* compact pure-JS SHA-256 fallback (for browsers without crypto.subtle) */
+function sha256Sync(ascii) {
+  function rr(v, a) { return (v >>> a) | (v << (32 - a)); }
+  var maxWord = Math.pow(2, 32), result = "";
+  var words = [];
+  var hash = sha256Sync.h = sha256Sync.h || [], k = sha256Sync.k = sha256Sync.k || [];
+  var primeCounter = k.length, isComposite = {};
+  for (var candidate = 2; primeCounter < 64; candidate++) {
+    if (!isComposite[candidate]) {
+      for (var i = 0; i < 313; i += candidate) isComposite[i] = candidate;
+      hash[primeCounter] = (Math.pow(candidate, 0.5) * maxWord) | 0;
+      k[primeCounter++] = (Math.pow(candidate, 1 / 3) * maxWord) | 0;
+    }
+  }
+  ascii = unescape(encodeURIComponent(ascii));
+  var asciiBitLength = ascii.length * 8;
+  ascii += "\x80";
+  while (ascii.length % 64 - 56) ascii += "\x00";
+  for (var i = 0; i < ascii.length; i++) {
+    var j = ascii.charCodeAt(i);
+    if (j >> 8) return "";
+    words[i >> 2] |= j << ((3 - i) % 4) * 8;
+  }
+  words[words.length] = (asciiBitLength / maxWord) | 0;
+  words[words.length] = asciiBitLength;
+  for (var j = 0; j < words.length;) {
+    var w = words.slice(j, j += 16), oldHash = hash;
+    hash = hash.slice(0, 8);
+    for (var i = 0; i < 64; i++) {
+      var w15 = w[i - 15], w2 = w[i - 2];
+      var a = hash[0], e = hash[4];
+      var temp1 = hash[7]
+        + (rr(e, 6) ^ rr(e, 11) ^ rr(e, 25))
+        + ((e & hash[5]) ^ ((~e) & hash[6]))
+        + k[i]
+        + (w[i] = (i < 16) ? w[i] : (w[i - 16] + (rr(w15, 7) ^ rr(w15, 18) ^ (w15 >>> 3)) + w[i - 7] + (rr(w2, 17) ^ rr(w2, 19) ^ (w2 >>> 10))) | 0);
+      var temp2 = (rr(a, 2) ^ rr(a, 13) ^ rr(a, 22)) + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+      hash = [(temp1 + temp2) | 0].concat(hash);
+      hash[4] = (hash[4] + temp1) | 0;
+    }
+    for (var i = 0; i < 8; i++) hash[i] = (hash[i] + oldHash[i]) | 0;
+  }
+  for (var i = 0; i < 8; i++) {
+    for (var j = 3; j + 1; j--) {
+      var b = (hash[i] >> (j * 8)) & 255;
+      result += ((b < 16) ? 0 : "") + b.toString(16);
+    }
+  }
+  return result;
+}
+function detectAdmin() {
+  var m = window.location.hash.match(/^#admin-([0-9a-f]{64})$/);
+  var tok = m ? m[1] : ssGet("cb_admin_token");
+  if (tok && /^[0-9a-f]{64}$/.test(tok)) { adminToken = tok; ssSet("cb_admin_token", tok); return true; }
+  return false;
+}
+
+async function loadAdmin() {
+  var list = document.getElementById("adminList");
+  list.innerHTML = '<div class="empty">正在加载举报……</div>';
+  try {
+    var rows = await apiPost("/rest/v1/rpc/admin_list_reports", { p_token: adminToken });
+    rows = Array.isArray(rows) ? rows : (rows && rows.data) || [];
+    if (!rows.length) { list.innerHTML = '<div class="empty">没有待处理的举报 🎉</div>'; return; }
+    list.innerHTML = rows.map(function (r) {
+      var s = sectionBySlug(r.section) || { emoji: "💬", name: r.section || "", color: "#999" };
+      return '<div class="admin-row">' +
+        '<div style="font-size:13px;color:#999;margin-bottom:6px">' + s.emoji + ' ' + s.name + ' · ' + timeAgo(r.created_at) + ' · 被举报 <b style="color:#d32f2f">' + (r.report_count || 1) + ' 次</b></div>' +
+        (r.title ? '<div style="font-weight:700;margin-bottom:4px">👑 ' + esc(r.title) + '</div>' : "") +
+        '<div style="font-size:15px;line-height:1.6">' + esc(r.content || "") + '</div>' +
+        (r.image_url ? '<img src="' + esc(r.image_url) + '" loading="lazy" style="width:100%;border-radius:10px;margin-top:8px;display:block" alt="帖子图片">' : "") +
+        '<div style="font-size:13px;color:#666;margin-top:8px">作者：' + (r.is_anonymous ? "匿名" : esc(r.author_name || "实名同学")) + ' · 理由：' + esc((r.reasons || []).join("、")) + '</div>' +
+        '<div style="font-size:13px;color:#888;margin-top:4px">IP：<span class="ip">' + esc(r.ip || "未知") + '</span></div>' +
+        '<div style="margin-top:10px;display:flex;gap:10px"><button class="btn-danger" data-act="del" data-id="' + r.post_id + '" type="button">删除帖子</button><button class="btn-ghost" data-act="dismiss" data-id="' + r.post_id + '" type="button">忽略举报</button></div>' +
+        '</div>';
+    }).join("");
+  } catch (e) { list.innerHTML = '<div class="empty">加载失败：口令无效或网络异常，请重试</div>'; }
+}
+
+document.getElementById("adminList").addEventListener("click", async function (ev) {
+  var t = ev.target;
+  var act = t.getAttribute("data-act");
+  if (!act) return;
+  var id = t.getAttribute("data-id");
+  t.disabled = true;
+  try {
+    if (act === "del") {
+      await apiPost("/rest/v1/rpc/admin_delete_post", { p_token: adminToken, p_post_id: id });
+      toast("已删除该帖子");
+    } else {
+      await apiPost("/rest/v1/rpc/admin_dismiss_reports", { p_token: adminToken, p_post_id: id });
+      toast("已忽略该举报");
+    }
+    loadAdmin();
+  } catch (e) { toast("操作失败，请重试"); t.disabled = false; }
+});
+
+document.getElementById("adminReload").onclick = loadAdmin;
+var adminSetupPending = null; // first entry of a new password, awaiting confirmation
+
+document.getElementById("adminLink").onclick = async function (ev) {
+  ev.preventDefault();
+  var input = document.getElementById("adminTokenInput");
+  var hasPw = true;
+  try { hasPw = await apiPost("/rest/v1/rpc/admin_has_password", {}); } catch (e) { hasPw = true; }
+  adminSetupPending = null;
+  input.value = "";
+  input.placeholder = hasPw ? "输入管理密码" : "设置管理密码（首次使用）";
+  input.dataset.mode = hasPw ? "login" : "setup";
+  document.getElementById("adminPrompt").style.display = "flex";
+  input.focus();
+};
+document.getElementById("adminCancel").onclick = function () {
+  document.getElementById("adminPrompt").style.display = "none";
+  adminSetupPending = null;
+};
+document.getElementById("adminGo").onclick = async function () {
+  var input = document.getElementById("adminTokenInput");
+  var pw = input.value.trim();
+  if (!pw) { toast("请输入管理密码"); return; }
+  if (pw.length < 4) { toast("密码至少 4 位"); return; }
+  var btn = document.getElementById("adminGo");
+  btn.disabled = true;
+  try {
+    var hash = await sha256Hex(pw);
+    if (!hash || hash.length !== 64) { toast("当前浏览器不支持，请用系统浏览器打开"); return; }
+    if (input.dataset.mode === "setup") {
+      if (!adminSetupPending) {
+        adminSetupPending = hash;
+        input.value = "";
+        input.placeholder = "请再输入一次管理密码（确认）";
+        toast("请再输入一次确认");
+        return;
+      }
+      if (adminSetupPending !== hash) {
+        adminSetupPending = null;
+        input.value = "";
+        input.placeholder = "设置管理密码（首次使用）";
+        toast("两次输入不一致，请重新设置");
+        return;
+      }
+      var ok = await apiPost("/rest/v1/rpc/admin_set_password", { p_hash: hash });
+      if (!ok) {
+        toast("设置失败，可能已经设置过，请直接输入密码");
+        input.dataset.mode = "login";
+        input.placeholder = "输入管理密码";
+        input.value = "";
+        return;
+      }
+      adminToken = hash;
+      ssSet("cb_admin_token", hash);
+      document.getElementById("adminPrompt").style.display = "none";
+      input.value = "";
+      toast("管理密码已设置");
+      showView("admin");
+      loadAdmin();
+      return;
+    }
+    var authed = await apiPost("/rest/v1/rpc/admin_auth", { p_token: hash });
+    if (!authed) { toast("管理密码错误"); return; }
+    adminToken = hash;
+    ssSet("cb_admin_token", hash);
+    document.getElementById("adminPrompt").style.display = "none";
+    input.value = "";
+    showView("admin");
+    loadAdmin();
+  } catch (e) {
+    toast("网络异常，请重试");
+  } finally {
+    btn.disabled = false;
+  }
+};
+window.addEventListener("hashchange", function () {
+  if (detectAdmin()) { showView("admin"); loadAdmin(); }
+});
+
+/* ---------- init ---------- */
+checkDisclaimer();
+if (detectAdmin()) { showView("admin"); loadAdmin(); } else { showView("home"); loadHome(); }
 </script>
 </body>
 </html>
