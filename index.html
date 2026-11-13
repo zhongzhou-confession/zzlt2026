@@ -197,8 +197,6 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   .skel { border-radius: 8px; background: linear-gradient(90deg,#f2f2f2 25%,#ffe9ee 50%,#f2f2f2 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; margin-bottom: 10px; }
   .skel-card { background: #fff; border-radius: 14px; padding: 16px; margin-bottom: 14px; box-shadow: 0 2px 10px rgba(255,94,122,.08); }
   @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-  .petal { position: absolute; top: -16px; width: 11px; height: 9px; background: radial-gradient(circle at 30% 30%, #ffd6e0, #ff9ebb); border-radius: 100% 4px 100% 4px; opacity: .85; pointer-events: none; animation: petalFall linear infinite; }
-  @keyframes petalFall { 0% { transform: translateY(-16px) translateX(0) rotate(0deg); opacity: 0; } 10% { opacity: .9; } 50% { transform: translateY(110px) translateX(14px) rotate(180deg); } 100% { transform: translateY(230px) translateX(-8px) rotate(340deg); opacity: .15; } }
   @keyframes slideInRight { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: none; } }
   @keyframes slideInLeft { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: none; } }
   #viewSection.enter-right { animation: slideInRight .45s cubic-bezier(.22,1,.36,1) both; }
@@ -208,9 +206,22 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   @keyframes floatUp { from { opacity: 1; transform: translate(-50%, 0) scale(1); } to { opacity: 0; transform: translate(-50%, -24px) scale(1.25); } }
   .submit.loading::before { content: ""; display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.45); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: -2px; margin-right: 7px; }
   @keyframes spin { to { transform: rotate(360deg); } }
+  /* ---- v8: 全站飘落花瓣 + 开关 ---- */
+  #fxLayer { position: fixed; inset: 0; z-index: 60; pointer-events: none; overflow: hidden; }
+  #fxLayer.off { display: none; }
+  .fx-petal { position: absolute; top: -20px; background: radial-gradient(circle at 30% 30%, #ffd6e0, #ff9ebb); border-radius: 100% 4px 100% 4px; animation: fxFall linear infinite; will-change: transform, opacity; }
+  @keyframes fxFall { 0% { transform: translate3d(0,-30px,0) rotate(0deg); opacity: 0; } 8% { opacity: .9; } 50% { transform: translate3d(18px,50vh,0) rotate(200deg); } 100% { transform: translate3d(-10px,108vh,0) rotate(360deg); opacity: .15; } }
+  .top-actions { display: flex; gap: 8px; align-items: center; }
+  #fxToggle { display: flex; align-items: center; gap: 5px; border: 1.5px solid #ffd3dc; background: #fff; border-radius: 999px; padding: 4px 7px; cursor: pointer; }
+  #fxToggle .fx-ico { font-size: 14px; line-height: 1; }
+  #fxToggle .fx-sw { width: 30px; height: 17px; border-radius: 999px; background: #ff5e7a; position: relative; transition: background .25s; flex: none; }
+  #fxToggle .fx-knob { position: absolute; top: 2px; left: 15px; width: 13px; height: 13px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: left .25s cubic-bezier(.22,1,.36,1); }
+  #fxToggle.off .fx-sw { background: #ccc; }
+  #fxToggle.off .fx-knob { left: 2px; }
 </style>
 </head>
 <body>
+<div id="fxLayer" aria-hidden="true"></div>
 
 <!-- Disclaimer overlay -->
 <div id="disclaimer" class="overlay" style="display:none">
@@ -226,7 +237,10 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
 <header class="topbar">
   <button id="homeBtn" type="button">🏠 首页</button>
   <span id="topTitle">🏫 中州高级中学论坛</span>
-  <button id="topRefresh" type="button">↻ 刷新</button>
+  <span class="top-actions">
+    <button id="fxToggle" type="button" aria-pressed="true" title="花瓣特效开关"><span class="fx-ico">🌸</span><span class="fx-sw"><span class="fx-knob"></span></span></button>
+    <button id="topRefresh" type="button">↻ 刷新</button>
+  </span>
 </header>
 
 <!-- Home / cover view -->
@@ -236,12 +250,6 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     <span class="float" style="top:20px;right:22px;animation-delay:.8s">👑</span>
     <span class="float" style="bottom:16px;left:30px;animation-delay:1.6s">🌳</span>
     <span class="float" style="bottom:22px;right:26px;animation-delay:2.4s">🎒</span>
-    <span class="petal" style="left:8%;animation-duration:7s;animation-delay:0s"></span>
-    <span class="petal" style="left:22%;animation-duration:9s;animation-delay:1.2s"></span>
-    <span class="petal" style="left:38%;animation-duration:8s;animation-delay:2.4s"></span>
-    <span class="petal" style="left:58%;animation-duration:10s;animation-delay:.6s"></span>
-    <span class="petal" style="left:74%;animation-duration:7.5s;animation-delay:1.8s"></span>
-    <span class="petal" style="left:88%;animation-duration:9.5s;animation-delay:3s"></span>
     <h1>🏫 中州高级中学论坛</h1>
     <p>属于我们自己的校园小天地 ✨ 表白 · 竞选 · 树洞 · 失物 · 学习 · 闲聊</p>
     <div class="hero-badges"><span>💌 表白墙</span><span>👑 校草校花</span><span>🌳 树洞</span><span>🎒 失物招领</span><span>📚 学习互助</span><span>💬 闲聊灌水</span></div>
@@ -302,7 +310,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
 </main>
 
 <footer>
-  <span>友善发言，理性表白 · 中州高级中学论坛 v7</span>
+  <span>友善发言，理性表白 · 中州高级中学论坛 v8</span>
   <a href="#" id="adminLink">管理</a>
 </footer>
 
@@ -487,6 +495,42 @@ document.getElementById("photo").onchange = function () {
 document.getElementById("homeBtn").onclick = goHome;
 document.getElementById("refreshBtn").onclick = function () { if (currentSection) loadFeed(currentSection); };
 document.getElementById("topRefresh").onclick = function () { if (currentSection) loadFeed(currentSection); else loadHome(); };
+
+/* ---------- v8: 全站飘落花瓣 + 开关 ---------- */
+var FX_COUNT = 14;
+function buildFx() {
+  var layer = document.getElementById("fxLayer");
+  if (!layer) return;
+  var html = "";
+  for (var i = 0; i < FX_COUNT; i++) {
+    var left = (Math.random() * 96).toFixed(1);
+    var size = 8 + Math.random() * 8;
+    var dur = (8 + Math.random() * 8).toFixed(1);
+    var delay = (-Math.random() * 16).toFixed(1);
+    var op = (0.5 + Math.random() * 0.4).toFixed(2);
+    html += '<span class="fx-petal" style="left:' + left + '%;width:' + size.toFixed(0) + 'px;height:' + (size * 0.8).toFixed(0) + 'px;opacity:' + op + ';animation-duration:' + dur + 's;animation-delay:' + delay + 's"></span>';
+  }
+  layer.innerHTML = html;
+}
+function setFx(on) {
+  var layer = document.getElementById("fxLayer");
+  var btn = document.getElementById("fxToggle");
+  if (layer) layer.classList.toggle("off", !on);
+  if (btn) { btn.classList.toggle("off", !on); btn.setAttribute("aria-pressed", on ? "true" : "false"); }
+  try { lsSet("cb_fx_petals", on ? "1" : "0"); } catch (e) {}
+}
+document.getElementById("fxToggle").onclick = function () {
+  var layer = document.getElementById("fxLayer");
+  var on = layer ? layer.classList.contains("off") : false;
+  setFx(on);
+  toast(on ? "花瓣特效已开启 🌸" : "花瓣特效已关闭");
+};
+buildFx();
+(function () {
+  var saved = null;
+  try { saved = lsGet("cb_fx_petals"); } catch (e) {}
+  setFx(saved !== "0");
+})();
 
 /* ---------- home / cover ---------- */
 async function loadHome() {
