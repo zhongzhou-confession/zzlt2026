@@ -218,6 +218,13 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   #fxToggle .fx-knob { position: absolute; top: 2px; left: 15px; width: 13px; height: 13px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: left .25s cubic-bezier(.22,1,.36,1); }
   #fxToggle.off .fx-sw { background: #ccc; }
   #fxToggle.off .fx-knob { left: 2px; }
+  /* ---- v9: 反馈 ---- */
+  .fb-ta { width: 100%; min-height: 120px; border: 1.5px solid #ffd3dc; border-radius: 12px; padding: 10px 12px; font-size: 14px; font-family: inherit; resize: vertical; outline: none; box-sizing: border-box; }
+  .fb-ta:focus { border-color: #ff5e7a; }
+  .fb-hint { font-size: 12px; color: #aaa; margin: 8px 0 12px; }
+  .fb-btns { display: flex; gap: 10px; }
+  .fb-btns button { flex: 1; width: auto; }
+  .fb-btns .ghost { background: #fff; color: #999; border: 1.5px solid #ddd; }
 </style>
 </head>
 <body>
@@ -230,6 +237,21 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     <h2>中州高级中学论坛</h2>
     <p class="dlg-text">中州高级中学论坛使用声明：1、本论坛为本校同学自发建立的校园交流平台，仅供本校同学交流使用。2、所有帖子内容由发帖人自行承担责任；请勿发布违法违规、色情暴力、人身攻击、造谣传谣、广告引流等内容。3、发帖即表示同意论坛记录发帖 IP，仅用于处理违规内容，不对外公开。4、管理员有权删除违规内容、处理举报；每月 1 日将清理全部帖子。5、未成年人请在家长指导下使用。</p>
     <button id="agreeBtn" type="button">我已阅读并同意，进入论坛</button>
+  </div>
+</div>
+
+<!-- Feedback dialog -->
+<div id="feedbackDlg" class="overlay" style="display:none">
+  <div class="dlg">
+    <div class="dlg-emoji">💡</div>
+    <h2>反馈建议</h2>
+    <p style="font-size:14px;color:#888;margin:4px 0 12px">有什么不满意的，或者想加什么功能，都可以告诉我们～</p>
+    <textarea id="fbText" class="fb-ta" maxlength="500" placeholder="写下你的想法…（最多500字）"></textarea>
+    <p class="fb-hint">匿名提交，只有论坛管理员能看到。</p>
+    <div class="fb-btns">
+      <button id="fbSubmit" type="button">提交反馈</button>
+      <button id="fbCancel" class="ghost" type="button">以后再说</button>
+    </div>
   </div>
 </div>
 
@@ -310,7 +332,9 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
 </main>
 
 <footer>
-  <span>友善发言，理性表白 · 中州高级中学论坛 v8</span>
+  <span>友善发言，理性表白 · 中州高级中学论坛 v9</span>
+  <a href="#" id="disclaimerLink">免责声明</a>
+  <a href="#" id="fbLink">💡 反馈</a>
   <a href="#" id="adminLink">管理</a>
 </footer>
 
@@ -406,8 +430,10 @@ async function apiGet(path) {
   if (!res.ok) throw new Error("请求失败（" + res.status + "）");
   try { return JSON.parse(txt); } catch (e) { return txt; }
 }
-async function apiPost(path, body) {
-  var res = await apiFetch(path, { method: "POST", headers: jsonHeaders(), body: JSON.stringify(body) });
+async function apiPost(path, body, extraHeaders) {
+  var h = jsonHeaders();
+  if (extraHeaders) { for (var k in extraHeaders) h[k] = extraHeaders[k]; }
+  var res = await apiFetch(path, { method: "POST", headers: h, body: JSON.stringify(body) });
   var txt = await res.text();
   var j = null; try { j = JSON.parse(txt); } catch (e) {}
   if (!res.ok) throw new Error((j && (j.error || j.message)) || ("请求失败（" + res.status + "）"));
@@ -473,6 +499,27 @@ function checkDisclaimer() {
 document.getElementById("agreeBtn").onclick = function () {
   lsSet("cb_disclaimer_agreed", "1");
   document.getElementById("disclaimer").style.display = "none";
+};
+
+/* ---------- v9: 反馈 + 免责声明入口 ---------- */
+document.getElementById("disclaimerLink").onclick = function (e) { if (e) e.preventDefault(); document.getElementById("disclaimer").style.display = "flex"; };
+document.getElementById("fbLink").onclick = function (e) { if (e) e.preventDefault(); document.getElementById("feedbackDlg").style.display = "flex"; };
+document.getElementById("fbCancel").onclick = function () { document.getElementById("feedbackDlg").style.display = "none"; };
+document.getElementById("fbSubmit").onclick = async function () {
+  var t = document.getElementById("fbText").value.trim();
+  if (!t) { toast("先写点什么吧～"); return; }
+  if (t.length > 500) { toast("反馈最多500字"); return; }
+  var btn = document.getElementById("fbSubmit");
+  btn.disabled = true; btn.textContent = "提交中…";
+  try {
+    await apiPost("/rest/v1/feedback", { content: t, device_id: deviceId }, { "Prefer": "return=minimal" });
+    document.getElementById("fbText").value = "";
+    document.getElementById("feedbackDlg").style.display = "none";
+    toast("反馈已收到，谢谢你！🌸");
+  } catch (err) {
+    toast("提交失败，请稍后再试");
+  }
+  btn.disabled = false; btn.textContent = "提交反馈";
 };
 
 /* ---------- anonymous / real-name toggle (pure DOM: works even if backend is down) ---------- */
