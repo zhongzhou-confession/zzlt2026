@@ -261,7 +261,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
 </main>
 
 <footer>
-  <span>友善发言，理性表白 · 中州高级中学论坛 v4</span>
+  <span>友善发言，理性表白 · 中州高级中学论坛 v5</span>
   <a href="#" id="adminLink">管理</a>
 </footer>
 
@@ -312,14 +312,53 @@ function isMyPost(id) { return myPosts().indexOf(id) >= 0; }
 /* ---------- API helpers (plain fetch, exact contract endpoints) ---------- */
 function authHeaders() { return { "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY }; }
 function jsonHeaders() { var h = authHeaders(); h["Content-Type"] = "application/json"; return h; }
+/* ---------- v5: 中转优先，直连兜底；单次请求 8 秒超时，网络失败自动换路重试 ---------- */
+var PROXY_URL = "https://sensational-salamander-d8c229.netlify.app";
+function proxyOn() { return PROXY_URL && PROXY_URL.indexOf("__") !== 0; }
+function apiHosts() { return proxyOn() ? [PROXY_URL, SUPABASE_URL] : [SUPABASE_URL]; }
+function apiFetch(path, opts) {
+  opts = opts || {};
+  var hosts = apiHosts();
+  var lastErr = null;
+  function attempt(i) {
+    if (i >= hosts.length) return Promise.reject(lastErr || new Error("网络异常"));
+    var ctrl = null, timer = null;
+    try { ctrl = new AbortController(); timer = setTimeout(function () { ctrl.abort(); }, 8000); } catch (e) {}
+    var o = {};
+    if (opts.method) o.method = opts.method;
+    if (opts.headers) o.headers = opts.headers;
+    if (opts.body !== undefined) o.body = opts.body;
+    if (ctrl) o.signal = ctrl.signal;
+    return fetch(hosts[i] + path, o).then(function (res) {
+      if (timer) clearTimeout(timer);
+      return res;
+    }).catch(function (e) {
+      if (timer) clearTimeout(timer);
+      lastErr = e;
+      return attempt(i + 1);
+    });
+  }
+  return attempt(0);
+}
+/* 图片地址：优先走中转，打不开再回直连 */
+function imgUrl(u) {
+  if (!u) return "";
+  if (proxyOn() && u.indexOf(SUPABASE_URL) === 0) return PROXY_URL + u.slice(SUPABASE_URL.length);
+  return u;
+}
+function imgTag(u, style) {
+  var shown = imgUrl(u);
+  var st = style ? ' style="' + style + '"' : "";
+  return '<img src="' + esc(shown) + '" loading="lazy"' + st + ' alt="帖子图片" onerror="this.onerror=null;this.src=\'' + esc(u) + '\'">';
+}
 async function apiGet(path) {
-  var res = await fetch(SUPABASE_URL + path, { headers: authHeaders() });
+  var res = await apiFetch(path, { headers: authHeaders() });
   var txt = await res.text();
   if (!res.ok) throw new Error("请求失败（" + res.status + "）");
   try { return JSON.parse(txt); } catch (e) { return txt; }
 }
 async function apiPost(path, body) {
-  var res = await fetch(SUPABASE_URL + path, { method: "POST", headers: jsonHeaders(), body: JSON.stringify(body) });
+  var res = await apiFetch(path, { method: "POST", headers: jsonHeaders(), body: JSON.stringify(body) });
   var txt = await res.text();
   var j = null; try { j = JSON.parse(txt); } catch (e) {}
   if (!res.ok) throw new Error((j && (j.error || j.message)) || ("请求失败（" + res.status + "）"));
@@ -495,7 +534,7 @@ function postHtml(p, s, i) {
   var who = p.is_anonymous ? "匿名" : esc(p.author_name || "实名同学");
   var av = p.is_anonymous ? "🕶️" : esc((p.author_name || "同").slice(0, 1));
   var title = p.title ? '<div class="post-title">👑 ' + esc(p.title) + '</div>' : "";
-  var img = p.image_url ? '<img src="' + esc(p.image_url) + '" loading="lazy" alt="帖子图片">' : "";
+  var img = p.image_url ? imgTag(p.image_url) : "";
   var liked = likedByMe[p.id];
   var isContest = s.slug === "contest";
   var likeLabel = isContest ? (liked ? "❤️ 已投票" : "❤️ 投票") : (liked ? "❤️ 已点赞" : "🤍 点赞");
@@ -564,13 +603,13 @@ document.getElementById("submitBtn").onclick = async function () {
     var imageUrl = null, imagePath = null;
     if (file) {
       imagePath = Date.now() + "_" + Math.random().toString(36).slice(2) + "_" + file.name.replace(/[^\w.\-]+/g, "_");
-      var up = await fetch(SUPABASE_URL + "/storage/v1/object/confession-images/" + imagePath, {
+      var up = await apiFetch("/storage/v1/object/confession-images/" + imagePath, {
         method: "POST",
         headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY, "Content-Type": file.type || "application/octet-stream" },
         body: file
       });
       if (!up.ok) throw new Error("照片上传失败，请重试");
-      imageUrl = SUPABASE_URL + "/storage/v1/object/public/confession-images/" + imagePath;
+      imageUrl = (proxyOn() ? PROXY_URL : SUPABASE_URL) + "/storage/v1/object/public/confession-images/" + imagePath;
     }
     var r = await apiPost("/functions/v1/submit-post", {
       section: currentSection, title: title || null, content: content,
@@ -733,7 +772,7 @@ async function loadAdmin() {
         '<div style="font-size:13px;color:#999;margin-bottom:6px">' + s.emoji + ' ' + s.name + ' · ' + timeAgo(r.created_at) + ' · 被举报 <b style="color:#d32f2f">' + (r.report_count || 1) + ' 次</b></div>' +
         (r.title ? '<div style="font-weight:700;margin-bottom:4px">👑 ' + esc(r.title) + '</div>' : "") +
         '<div style="font-size:15px;line-height:1.6">' + esc(r.content || "") + '</div>' +
-        (r.image_url ? '<img src="' + esc(r.image_url) + '" loading="lazy" style="width:100%;border-radius:10px;margin-top:8px;display:block" alt="帖子图片">' : "") +
+        (r.image_url ? imgTag(r.image_url, "width:100%;border-radius:10px;margin-top:8px;display:block") : "") +
         '<div style="font-size:13px;color:#666;margin-top:8px">作者：' + (r.is_anonymous ? "匿名" : esc(r.author_name || "实名同学")) + ' · 理由：' + esc((r.reasons || []).join("、")) + '</div>' +
         '<div style="font-size:13px;color:#888;margin-top:4px">IP：<span class="ip">' + esc(r.ip || "未知") + '</span></div>' +
         '<div style="margin-top:10px;display:flex;gap:10px"><button class="btn-danger" data-act="del" data-id="' + r.post_id + '" type="button">删除帖子</button><button class="btn-ghost" data-act="dismiss" data-id="' + r.post_id + '" type="button">忽略举报</button></div>' +
