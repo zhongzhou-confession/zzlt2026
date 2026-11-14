@@ -43,10 +43,10 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
 html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
 body { font-family: Inter, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; line-height: 1.6; font-variant-numeric: tabular-nums; }
 button { font-family: inherit; }
-.wrap { max-width: 640px; margin: 0 auto; padding: 16px 16px 48px; }
+.wrap { max-width: 960px; margin: 0 auto; padding: 16px 16px 48px; }
 
 /* ---- 顶栏 ---- */
-.topbar { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 8px; max-width: 640px; margin: 0 auto; padding: 12px 16px; background: rgba(255,255,255,.94); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+.topbar { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 8px; max-width: 960px; margin: 0 auto; padding: 12px 16px; background: rgba(255,255,255,.94); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
 .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 16px; color: var(--text); cursor: pointer; border: 0; background: none; padding: 0; }
 .logo-mark { width: 32px; height: 32px; border-radius: 8px; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 800; flex: none; }
 .topbar .spacer { flex: 1; }
@@ -55,12 +55,8 @@ button { font-family: inherit; }
 .topbar .tb-btn:active { transform: scale(.96); }
 .topbar .tb-btn:disabled { color: var(--text-3); }
 
-/* ---- 横幅（紧凑顶栏） ---- */
-.hero { background: var(--card); border: 1px solid var(--border); border-radius: 10px; color: var(--text); padding: 16px 20px; margin-bottom: 8px; }
-.hero h1 { font-size: 20px; font-weight: 800; letter-spacing: 0; }
-.hero p { margin-top: 4px; font-size: 13px; line-height: 1.6; color: var(--text-2); }
-.hero-badges { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
-.hero-badges span { background: var(--bg); border: 1px solid var(--border); color: var(--text-2); border-radius: 999px; padding: 4px 10px; font-size: 12px; }
+/* ---- 首页副标题 ---- */
+.home-sub { font-size: 13px; color: var(--text-3); margin: 0 0 12px; }
 
 /* ---- 面包屑 ---- */
 .crumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); margin-bottom: 16px; flex-wrap: wrap; }
@@ -74,12 +70,15 @@ button { font-family: inherit; }
 .sec-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; cursor: pointer; transition: border-color .15s ease; }
 .sec-card:hover { border-color: #A1A1AA; }
 .sec-card:active { transform: scale(.98); }
-.sec-card .icon { width: 40px; height: 40px; color: var(--primary); display: flex; align-items: center; justify-content: flex-start; }
-.sec-card .icon svg { width: 22px; height: 22px; }
-.sec-card h3 { font-size: 16px; font-weight: 600; margin: 8px 0 4px; }
-.sec-card p { font-size: 13px; color: var(--text-2); line-height: 1.5; }
-.sec-card .meta { margin-top: 12px; font-size: 12px; color: var(--text-3); }
-.sec-card .latest { margin-top: 8px; font-size: 12px; color: var(--text-2); background: var(--bg); border-left: 3px solid #D4D4D8; border-radius: 0 6px 6px 0; padding: 8px 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sec-card .sec-head { display: flex; align-items: center; gap: 8px; }
+.sec-card .icon { width: 18px; height: 18px; color: #27272A; flex: none; display: flex; align-items: center; justify-content: center; }
+.sec-card .icon svg { width: 18px; height: 18px; }
+.sec-card h3 { font-size: 16px; font-weight: 700; margin: 0; flex: 1; min-width: 0; }
+.sec-card .sec-count { flex: none; font-size: 12px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+.sec-card p { font-size: 13px; color: var(--text-2); line-height: 1.5; margin-top: 8px; }
+.sec-card .latest { margin-top: 10px; font-size: 12px; color: var(--text-2); background: var(--bg); border-left: 3px solid #D4D4D8; border-radius: 0 6px 6px 0; padding: 7px 10px; display: flex; gap: 6px; align-items: center; min-width: 0; }
+.sec-card .latest-tag { flex: none; font-size: 11px; font-weight: 700; color: var(--text-2); background: #E4E4E7; border-radius: 4px; padding: 1px 5px; }
+.sec-card .latest-txt { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* ---- 首页最新 ---- */
 .mini-post { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; margin-bottom: 8px; display: flex; gap: 8px; align-items: flex-start; cursor: pointer; transition: border-color .15s ease; }
@@ -91,7 +90,7 @@ button { font-family: inherit; }
 /* ---- 板块头 ---- */
 .sec-header { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px 20px 16px; margin-bottom: 16px; }
 .sec-header .sec-head-row { display: flex; align-items: center; gap: 12px; }
-.sec-header .icon { width: 44px; height: 44px; color: var(--primary); display: flex; align-items: center; justify-content: flex-start; flex: none; }
+.sec-header .icon { width: 44px; height: 44px; color: #27272A; display: flex; align-items: center; justify-content: flex-start; flex: none; }
 .sec-header .icon svg { width: 24px; height: 24px; }
 .sec-header h2 { font-size: 20px; font-weight: 800; }
 .sec-header p { font-size: 14px; color: var(--text-2); margin-top: 8px; }
@@ -128,9 +127,9 @@ button { font-family: inherit; }
 .sort-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
 /* 搜索 */
 .search-row { display: flex; gap: 8px; margin: 0 0 14px; }
-.search-row input { flex: 1; border: 1px solid var(--border); border-radius: 999px; padding: 10px 14px; font-size: 14px; outline: none; background: #fff; }
+.search-row input { flex: 1; border: 1px solid var(--border); border-radius: 8px; height: 42px; padding: 0 14px; font-size: 14px; outline: none; background: #fff; }
 .search-row input:focus { border-color: var(--primary); }
-.search-row button { border: 0; background: var(--primary); color: #fff; border-radius: 999px; padding: 10px 18px; font-size: 14px; font-weight: 700; cursor: pointer; }
+.search-row button { border: 0; background: var(--primary); color: #fff; border-radius: 8px; height: 42px; padding: 0 18px; font-size: 14px; font-weight: 700; cursor: pointer; }
 .search-row .clear { background: #fff; color: var(--text-2); border: 1px solid var(--border); }
 /* 帖子图片可点 */
 .post-img { cursor: zoom-in; }
@@ -345,7 +344,6 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
 /* ---- 平板与桌面 ---- */
 @media (min-width: 640px) {
   .grid { grid-template-columns: 1fr 1fr; }
-  .hero h1 { font-size: 20px; }
 }
 @media (min-width: 960px) {
   .wrap { max-width: 960px; }
@@ -409,14 +407,10 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
     <button class="announce-ok" id="announceOk" type="button">我已阅读</button>
     </div>
   </section>
-  <section class="hero">
-    <h1>中州校园论坛</h1>
-    <p>咱们学校自己的小论坛，心愿、树洞、失物、学习都在这儿</p>
-    <div class="hero-badges"><span>心愿墙</span><span>风采自荐</span><span>匿名树洞</span><span>失物寻回</span><span>学习交流</span><span>自由讨论</span></div>
-  </section>
+  <div class="home-sub">咱们学校自己的小论坛，心愿、树洞、失物、学习都在这儿</div>
 
   <div class="search-row">
-    <input type="search" id="searchInput" placeholder="搜帖子：输入关键词，比如“食堂”“羽毛球”……" maxlength="50" enterkeyhint="search">
+    <input type="search" id="searchInput" placeholder="搜帖子：输入关键词，如“食堂”“羽毛球”……" maxlength="50" enterkeyhint="search">
     <button id="searchBtn" type="button">搜索</button>
   </div>
   <div id="searchBox" style="display:none">
@@ -570,12 +564,12 @@ var ICONS = {
   msgSquare: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'
 };
 var SECTIONS = [
-  { slug: "confession", icon: "heart", name: "\u5fc3\u613f\u5899", color: "#15803D", desc: "表白、许愿、想说又不敢当面讲的", formTitle: "\u5199\u4e0b\u4f60\u7684\u5fc3\u613f", formPh: "\u60f3\u5bf9 TA \u8bf4\u7684\u8bdd\u2026\u2026\uff08\u6700\u591a 500 \u5b57\uff09" },
-  { slug: "contest", icon: "star", name: "\u98ce\u91c7\u81ea\u8350", color: "#15803D", desc: "有才艺有颜值，或者想夸一夸欣赏的同学", formTitle: "\u98ce\u91c7\u81ea\u8350", formPh: "\u4ecb\u7ecd\u4e00\u4e0b\u81ea\u5df1\uff0c\u6216\u8005\u63a8\u8350\u4f60\u6b23\u8d4f\u7684\u540c\u5b66" },
-  { slug: "treehole", icon: "msgCircle", name: "\u533f\u540d\u6811\u6d1e", color: "#15803D", desc: "不敢说的心里话，匿名讲出来也没人知道是你", formTitle: "\u8bf4\u51fa\u4f60\u7684\u5fc3\u91cc\u8bdd", formPh: "\u8fd9\u91cc\u5f88\u5b89\u5168\uff0c\u6084\u6084\u8bf4\u5427\u2026\u2026" },
-  { slug: "lostfound", icon: "search", name: "\u5931\u7269\u5bfb\u56de", color: "#15803D", desc: "校园卡、校服、耳机丢了或捡到了来这喊一声", formTitle: "\u53d1\u5e03\u5931\u7269\u5bfb\u56de", formPh: "\u4e22\u4e86\u4ec0\u4e48 / \u6361\u5230\u4e86\u4ec0\u4e48\uff1f\u5199\u6e05\u695a\u65f6\u95f4\u5730\u70b9\u2026\u2026" },
-  { slug: "study", icon: "book", name: "\u5b66\u4e60\u4ea4\u6d41", color: "#15803D", desc: "作业不会做、考试有心得，来这儿问问聊聊", formTitle: "\u53d1\u8d77\u5b66\u4e60\u4ea4\u6d41", formPh: "\u54ea\u9053\u9898\u4e0d\u4f1a\uff1f\u54ea\u4e2a\u77e5\u8bc6\u70b9\u60f3\u804a\u804a\uff1f" },
-  { slug: "chat", icon: "msgSquare", name: "\u81ea\u7531\u8ba8\u8bba", color: "#15803D", desc: "想到什么说什么，不限话题", formTitle: "\u81ea\u7531\u8ba8\u8bba", formPh: "\u60f3\u8bf4\u4ec0\u4e48\u5c31\u8bf4\u4ec0\u4e48" }
+  { slug: "confession", icon: "heart", name: "\u5fc3\u613f\u5899", color: "#27272A", desc: "表白、许愿、想说又不敢当面讲的", formTitle: "\u5199\u4e0b\u4f60\u7684\u5fc3\u613f", formPh: "\u60f3\u5bf9 TA \u8bf4\u7684\u8bdd\u2026\u2026\uff08\u6700\u591a 500 \u5b57\uff09" },
+  { slug: "contest", icon: "star", name: "\u98ce\u91c7\u81ea\u8350", color: "#27272A", desc: "有才艺有颜值，或者想夸一夸欣赏的同学", formTitle: "\u98ce\u91c7\u81ea\u8350", formPh: "\u4ecb\u7ecd\u4e00\u4e0b\u81ea\u5df1\uff0c\u6216\u8005\u63a8\u8350\u4f60\u6b23\u8d4f\u7684\u540c\u5b66" },
+  { slug: "treehole", icon: "msgCircle", name: "\u533f\u540d\u6811\u6d1e", color: "#27272A", desc: "不敢说的心里话，匿名讲出来也没人知道是你", formTitle: "\u8bf4\u51fa\u4f60\u7684\u5fc3\u91cc\u8bdd", formPh: "\u8fd9\u91cc\u5f88\u5b89\u5168\uff0c\u6084\u6084\u8bf4\u5427\u2026\u2026" },
+  { slug: "lostfound", icon: "search", name: "\u5931\u7269\u5bfb\u56de", color: "#27272A", desc: "校园卡、校服、耳机丢了或捡到了来这喊一声", formTitle: "\u53d1\u5e03\u5931\u7269\u5bfb\u56de", formPh: "\u4e22\u4e86\u4ec0\u4e48 / \u6361\u5230\u4e86\u4ec0\u4e48\uff1f\u5199\u6e05\u695a\u65f6\u95f4\u5730\u70b9\u2026\u2026" },
+  { slug: "study", icon: "book", name: "\u5b66\u4e60\u4ea4\u6d41", color: "#27272A", desc: "作业不会做、考试有心得，来这儿问问聊聊", formTitle: "\u53d1\u8d77\u5b66\u4e60\u4ea4\u6d41", formPh: "\u54ea\u9053\u9898\u4e0d\u4f1a\uff1f\u54ea\u4e2a\u77e5\u8bc6\u70b9\u60f3\u804a\u804a\uff1f" },
+  { slug: "chat", icon: "msgSquare", name: "\u81ea\u7531\u8ba8\u8bba", color: "#27272A", desc: "想到什么说什么，不限话题", formTitle: "\u81ea\u7531\u8ba8\u8bba", formPh: "\u60f3\u8bf4\u4ec0\u4e48\u5c31\u8bf4\u4ec0\u4e48" }
 ];
 var REPORT_REASONS = ["广告引流", "辱骂攻击", "色情低俗", "违法信息", "其他"];
 
@@ -1077,8 +1071,8 @@ async function loadHome() {
   var grid = document.getElementById("secGrid");
   grid.innerHTML = SECTIONS.map(function (s, i) {
     return '<div class="sec-card" data-slug="' + s.slug + '" style="animation-delay:' + (i * 60) + 'ms">' +
-      '<div class="icon">' + ICONS[s.icon] + '</div><h3>' + s.name + '</h3><p>' + s.desc + '</p>' +
-      '<div class="meta" data-count="' + s.slug + '">帖子加载中…</div>' +
+      '<div class="sec-head"><span class="icon">' + ICONS[s.icon] + '</span><h3>' + s.name + '</h3><span class="sec-count" data-count="' + s.slug + '">…</span></div>' +
+      '<p>' + s.desc + '</p>' +
       '<div class="latest" data-latest="' + s.slug + '"></div></div>';
   }).join("");
   grid.querySelectorAll(".sec-card").forEach(function (card) {
@@ -1093,10 +1087,10 @@ async function loadHome() {
     });
     SECTIONS.forEach(function (s) {
       var c = grid.querySelector('[data-count="' + s.slug + '"]');
-      if (c) c.textContent = (counts[s.slug] || 0) + " 条帖子";
+      if (c) c.textContent = (counts[s.slug] || 0) + " 帖";
       var l = grid.querySelector('[data-latest="' + s.slug + '"]');
       var lp = latest[s.slug];
-      if (l) l.textContent = lp ? ("最新：" + (lp.is_anonymous ? "匿名" : (lp.author_name || "同学")) + "：" + lp.content.slice(0, 18)) : "还没有帖子";
+      if (l) l.innerHTML = lp ? ('<span class="latest-tag">最新</span><span class="latest-txt">' + esc(lp.is_anonymous ? "匿名" : (lp.author_name || "同学")) + ' · ' + esc(lp.content) + '</span>') : "还没有帖子";
     });
     var hl = document.getElementById("homeLatest");
     var top5 = (posts || []).slice(0, 5);
