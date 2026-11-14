@@ -117,6 +117,48 @@ button { font-family: inherit; }
 .announce .announce-ok:hover { background: var(--primary-dark); }
 .topbar .tb-btn { position: relative; }
 .tb-dot { position: absolute; top: 4px; right: 2px; width: 8px; height: 8px; border-radius: 50%; background: #EF4444; }
+/* 灯箱：点图片放大看 */
+.lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.88); z-index: 200; display: none; align-items: center; justify-content: center; padding: 16px; cursor: zoom-out; }
+.lightbox img { max-width: 100%; max-height: 88vh; border-radius: 10px; object-fit: contain; }
+.lightbox .lb-close { position: absolute; top: 14px; right: 16px; color: #fff; font-size: 30px; font-weight: 700; background: none; border: 0; cursor: pointer; line-height: 1; padding: 4px 8px; }
+/* 排序切换：最新 / 最热 */
+.sort-group { display: flex; gap: 6px; margin-left: auto; }
+.sort-btn { border: 1px solid var(--border); background: #fff; color: var(--text-2); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 700; cursor: pointer; }
+.sort-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+/* 搜索 */
+.search-row { display: flex; gap: 8px; margin: 0 0 14px; }
+.search-row input { flex: 1; border: 1px solid var(--border); border-radius: 999px; padding: 10px 14px; font-size: 14px; outline: none; background: #fff; }
+.search-row input:focus { border-color: var(--primary); }
+.search-row button { border: 0; background: var(--primary); color: #fff; border-radius: 999px; padding: 10px 18px; font-size: 14px; font-weight: 700; cursor: pointer; }
+.search-row .clear { background: #fff; color: var(--text-2); border: 1px solid var(--border); }
+/* 帖子图片可点 */
+.post-img { cursor: zoom-in; }
+/* 实名头像/名字可点进主页 */
+.who.prof, .avatar[data-prof] { cursor: pointer; }
+.who.prof { color: var(--primary); }
+/* 编辑按钮 */
+.edit { border: 1px solid var(--border); background: #fff; color: var(--text-2); border-radius: 999px; padding: 5px 12px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.edit:hover { border-color: var(--primary); color: var(--primary); }
+/* 帖子内联编辑 */
+.post-edit-box { margin-top: 8px; }
+.post-edit-box textarea { width: 100%; min-height: 80px; border: 1px solid var(--primary); border-radius: 10px; padding: 10px 12px; font-size: 14px; line-height: 1.7; outline: none; resize: vertical; font-family: inherit; }
+.post-edit-row { display: flex; gap: 8px; margin-top: 8px; justify-content: flex-end; }
+.post-edit-row button { border-radius: 999px; padding: 7px 16px; font-size: 13px; font-weight: 700; cursor: pointer; }
+.post-edit-save { border: 0; background: var(--primary); color: #fff; }
+.post-edit-cancel { border: 1px solid var(--border); background: #fff; color: var(--text-2); }
+/* 个人主页 */
+.profile-card { text-align: center; padding: 28px 16px 20px; }
+.profile-avatar { width: 84px; height: 84px; margin: 0 auto 12px; border-radius: 50%; background: var(--primary-soft); display: flex; align-items: center; justify-content: center; font-size: 44px; }
+.profile-name { font-size: 20px; font-weight: 800; }
+.profile-sig { color: var(--text-2); font-size: 14px; line-height: 1.7; margin-top: 6px; white-space: pre-wrap; word-break: break-word; }
+.profile-meta { color: var(--text-3); font-size: 12px; margin-top: 8px; }
+.avatar-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin: 8px 0 4px; }
+.avatar-pick { border: 2px solid var(--border); background: #fff; border-radius: 12px; font-size: 26px; padding: 8px 0; cursor: pointer; line-height: 1.2; }
+.avatar-pick.sel { border-color: var(--primary); background: var(--primary-soft); }
+.profile-field { margin-top: 12px; }
+.profile-field label { display: block; font-size: 13px; font-weight: 700; color: var(--text-2); margin-bottom: 6px; }
+.profile-field input, .profile-field textarea { width: 100%; border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; font-size: 14px; outline: none; font-family: inherit; }
+.profile-field input:focus, .profile-field textarea:focus { border-color: var(--primary); }
 .row { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
 .seg { display: flex; border: 1.5px solid var(--primary); border-radius: 999px; overflow: hidden; }
 .seg button { border: 0; background: #fff; color: var(--primary); font-size: 14px; font-weight: 600; padding: 8px 16px; cursor: pointer; min-height: 36px; }
@@ -179,7 +221,8 @@ textarea { min-height: 88px; resize: vertical; }
 .podium { display: flex; align-items: flex-end; gap: 8px; margin: 8px 0 16px; }
 .podium-col { flex: 1; text-align: center; border: 1px solid var(--border); border-radius: 12px; padding: 12px 6px 0; background: var(--bg); overflow: hidden; }
 .podium-col .pod-crown { font-size: 14px; font-weight: 800; color: var(--primary); display: block; }
-.podium-col .pod-avatar { width: 48px; height: 48px; margin: 8px auto; border-radius: 50%; background: var(--primary); color: #fff; font-size: 20px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.podium-col .pod-avatar { width: 48px; height: 48px; margin: 8px auto; border-radius: 50%; background: var(--primary); color: #fff; font-size: 20px; font-weight: 800; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+.podium-col .pod-avatar-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 .podium-col .pod-name { font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
 .podium-col .pod-votes { font-size: 12px; color: var(--text-2); font-weight: 600; margin-top: 2px; }
 .podium-col .pod-base { margin-top: 8px; font-size: 12px; font-weight: 800; color: #fff; background: var(--primary); padding: 6px 0; }
@@ -370,11 +413,21 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
     <div class="hero-badges"><span>心愿墙</span><span>风采自荐</span><span>匿名树洞</span><span>失物寻回</span><span>学习交流</span><span>自由讨论</span></div>
   </section>
 
+  <div class="search-row">
+    <input type="search" id="searchInput" placeholder="搜帖子：输入关键词，比如“食堂”“羽毛球”……" maxlength="50" enterkeyhint="search">
+    <button id="searchBtn" type="button">搜索</button>
+  </div>
+  <div id="searchBox" style="display:none">
+    <div class="sec-title" style="display:flex;align-items:center;gap:8px"><span id="searchTitle">搜索结果</span><button class="sort-btn clear" id="searchClear" type="button" style="margin-left:auto">返回首页</button></div>
+    <div id="searchResults"></div>
+  </div>
+  <div id="homeMain">
   <div class="sec-title">板块</div>
   <div id="secGrid" class="grid"></div>
 
   <div class="sec-title">最新动态</div>
   <div id="homeLatest"><div class="skel-card" style="padding:12px 14px"><div class="skel" style="width:88%;height:14px;margin-bottom:0"></div></div><div class="skel-card" style="padding:12px 14px"><div class="skel" style="width:72%;height:14px;margin-bottom:0"></div></div></div>
+  </div>
 </main>
 
 <!-- 板块页 -->
@@ -411,9 +464,49 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
 
   <div class="toolbar">
     <h2 id="feedTitle">帖子</h2>
+    <div class="sort-group">
+      <button class="sort-btn active" id="sortNew" type="button">最新</button>
+      <button class="sort-btn" id="sortHot" type="button">最热</button>
+    </div>
     <button id="refreshBtn" type="button">刷新</button>
   </div>
   <div id="feed"><div class="empty">正在加载帖子……</div></div>
+</main>
+
+<!-- 我的帖子 -->
+<main id="viewMine" class="wrap" style="display:none">
+  <nav class="crumb"><a href="#/" id="mineCrumb">首页</a> / <span>我的帖子</span></nav>
+  <div class="toolbar">
+    <h2>我的帖子</h2>
+    <button id="mineRefresh" type="button">刷新</button>
+  </div>
+  <p style="font-size:13px;color:#6B7280;line-height:1.7;margin-bottom:12px">只显示这台设备上发过的帖子（换手机或清掉浏览器数据就找不到了）。点进去可以编辑或删除。</p>
+  <div id="mineFeed"><div class="empty">正在加载……</div></div>
+</main>
+
+<!-- 个人主页 -->
+<main id="viewProfile" class="wrap" style="display:none">
+  <nav class="crumb"><a href="#/" id="profCrumb">首页</a> / <span>个人主页</span></nav>
+  <section class="card profile-card" id="profileCard">
+    <div class="profile-avatar" id="profAvatar">同</div>
+    <div class="profile-name" id="profName">实名同学</div>
+    <div class="profile-sig" id="profSig">这个人还没有写签名</div>
+    <div class="profile-meta" id="profMeta"></div>
+    <div style="margin-top:14px"><button class="btn-ghost" id="profEditBtn" type="button" style="display:none">编辑我的主页</button></div>
+  </section>
+  <section class="card" id="profEditCard" style="display:none">
+    <h2>编辑我的主页</h2>
+    <div class="profile-field"><label>选个头像</label><div class="avatar-grid" id="avatarGrid"></div></div>
+    <div class="profile-field"><label>昵称（最多 20 字）</label><input type="text" id="profNameInput" maxlength="20" placeholder="比如：高三三班的小明"></div>
+    <div class="profile-field"><label>签名 / 个人介绍（最多 80 字）</label><textarea id="profSigInput" rows="3" maxlength="80" placeholder="写一句话介绍自己吧"></textarea></div>
+    <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end">
+      <button class="btn-ghost" id="profEditCancel" type="button">取消</button>
+      <button class="submit" id="profSaveBtn" type="button" style="width:auto;padding:10px 22px">保存</button>
+    </div>
+    <p style="font-size:12px;color:#9CA3AF;line-height:1.7;margin-top:12px">只在实名发帖和实名评论时显示你的头像和昵称；匿名发帖和匿名评论不会显示，也点不进主页。</p>
+  </section>
+  <div class="toolbar"><h2>他/她的帖子</h2></div>
+  <div id="profFeed"><div class="empty">正在加载……</div></div>
 </main>
 
 <!-- 管理页 -->
@@ -439,6 +532,8 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
 <footer>
   <nav class="foot-nav">
     <button id="footHome" type="button">首页</button>
+    <button id="mineLink" type="button">我的帖子</button>
+    <button id="profLink" type="button">我的主页</button>
     <button id="disclaimerLink" type="button">规则声明</button>
     <button id="fbLink" type="button">反馈通道</button>
     <button id="adminLink" type="button">管理后台</button>
@@ -538,8 +633,36 @@ function imgUrl(u) {
 function imgTag(u, style) {
   var shown = imgUrl(u);
   var st = style ? ' style="' + style + '"' : "";
-  return '<img src="' + esc(shown) + '" loading="lazy"' + st + ' alt="帖子图片" onerror="this.onerror=null;this.src=\'' + esc(u) + '\'">';
+  return '<img class="post-img" src="' + esc(shown) + '" loading="lazy"' + st + ' alt="帖子图片" data-full="' + esc(u) + '" onerror="this.onerror=null;this.src=\'' + esc(u) + '\'">';
 }
+/* 灯箱：点图片放大，再点任意处关闭（事件委托，帖子图和举报里的图都能点） */
+function openLightbox(u) {
+  var lb = document.getElementById("lightbox");
+  var im = document.getElementById("lightboxImg");
+  if (!lb || !im) return;
+  im.src = imgUrl(u) || u;
+  lb.style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+function closeLightbox() {
+  var lb = document.getElementById("lightbox");
+  if (!lb) return;
+  lb.style.display = "none";
+  document.body.style.overflow = "";
+}
+document.addEventListener("click", function (e) {
+  var t = e.target;
+  if (t && t.classList && t.classList.contains("post-img")) {
+    openLightbox(t.getAttribute("data-full") || t.src);
+    return;
+  }
+  /* 点实名头像/名字进主页（匿名没有 data-prof，点不到） */
+  var profEl = t && t.closest ? t.closest("[data-prof]") : null;
+  if (profEl) { openProfile(profEl.getAttribute("data-prof")); return; }
+  /* 点编辑按钮改自己的帖子 */
+  var editBtn = t && t.closest ? t.closest(".edit") : null;
+  if (editBtn) { startEditPost(editBtn.getAttribute("data-id")); return; }
+});
 async function apiGet(path) {
   var res = await apiFetch(path, { headers: authHeaders() });
   var txt = await res.text();
@@ -588,12 +711,201 @@ var feedPosts = [];
 var likeCount = {};
 var likedByMe = {};
 
+/* ---------- 个人主页 ---------- */
+var AVATARS = ["🐱", "🐶", "🦊", "🐼", "🐰", "🐻", "⭐", "🌙", "☀️", "🌸", "🚀", "🎵"];
+var profileCache = {}; /* device_id -> {display_name, avatar, signature} */
+var myProfile = null; /* 自己的主页 */
+var myProfileLoaded = false;
+async function fetchProfiles(deviceIds) {
+  var ids = (deviceIds || []).filter(function (d) { return d && !profileCache[d]; });
+  if (!ids.length) return;
+  try {
+    var rows = await apiGet("/rest/v1/profiles?select=device_id,display_name,avatar,signature&device_id=in.(" + ids.map(encodeURIComponent).join(",") + ")");
+    (rows || []).forEach(function (r) { profileCache[r.device_id] = r; });
+  } catch (e) { /* 主页读不到不影响看帖 */ }
+}
+async function loadMyProfile() {
+  if (myProfileLoaded) return myProfile;
+  myProfileLoaded = true;
+  try {
+    var rows = await apiGet("/rest/v1/profiles?select=display_name,avatar,signature&device_id=eq." + encodeURIComponent(deviceId));
+    myProfile = (rows && rows[0]) || null;
+    if (myProfile) profileCache[deviceId] = myProfile;
+  } catch (e) { myProfile = null; }
+  return myProfile;
+}
+/* 实名帖/评论用的头像和名字：有主页就用主页的，没有就用发帖时填的名字 */
+function profName(deviceId, fallback) {
+  var p = profileCache[deviceId];
+  if (p && p.display_name) return p.display_name;
+  return fallback || "实名同学";
+}
+function profAvatar(deviceId, fallback) {
+  var p = profileCache[deviceId];
+  if (p && p.avatar) return p.avatar;
+  return (fallback || "同").slice(0, 1);
+}
+
 /* ---------- views ---------- */
 function showView(v) {
   document.getElementById("viewHome").style.display = v === "home" ? "block" : "none";
   document.getElementById("viewSection").style.display = v === "section" ? "block" : "none";
   document.getElementById("viewAdmin").style.display = v === "admin" ? "block" : "none";
+  document.getElementById("viewMine").style.display = v === "mine" ? "block" : "none";
+  document.getElementById("viewProfile").style.display = v === "profile" ? "block" : "none";
   window.scrollTo(0, 0);
+}
+/* ---------- 个人主页 ---------- */
+var profSelAvatar = null;
+function openProfile(did) {
+  if (!did) return;
+  if ((window.location.hash || "") === "#/u/" + did) { _openProfile(did); return; }
+  window.location.hash = "#/u/" + did;
+}
+function _openProfile(did) {
+  showView("profile");
+  loadProfile(did);
+}
+async function loadProfile(did) {
+  var isMine = did === deviceId;
+  document.getElementById("profEditBtn").style.display = isMine ? "" : "none";
+  document.getElementById("profEditCard").style.display = "none";
+  var feed = document.getElementById("profFeed");
+  feed.innerHTML = '<div class="empty">正在加载……</div>';
+  try {
+    await fetchProfiles([did]);
+    var p = profileCache[did];
+    var name = (p && p.display_name) || (isMine ? "实名同学" : "实名同学");
+    var av = (p && p.avatar) || "同";
+    var sig = (p && p.signature) || "这个人还没有写签名";
+    document.getElementById("profAvatar").textContent = av;
+    document.getElementById("profName").textContent = name;
+    document.getElementById("profSig").textContent = sig;
+    document.getElementById("profMeta").textContent = isMine ? "这是你的主页" : "";
+    /* 只显示实名帖子，匿名帖子不关联到主页 */
+    var posts = await apiGet("/rest/v1/posts?select=id,section,title,content,image_url,author_name,is_anonymous,device_id,created_at&device_id=eq." + encodeURIComponent(did) + "&is_anonymous=eq.false&order=created_at.desc&limit=50");
+    if (!posts || !posts.length) { feed.innerHTML = '<div class="empty">还没有实名发过帖子</div>'; return; }
+    feed.innerHTML = posts.map(function (po, i) {
+      var s = sectionBySlug(po.section) || { name: "论坛", slug: po.section };
+      return postHtml(po, s, i);
+    }).join("");
+  } catch (e) {
+    feed.innerHTML = '<div class="empty">加载失败，请检查网络后重试</div>';
+  }
+}
+function renderAvatarGrid() {
+  var g = document.getElementById("avatarGrid");
+  g.innerHTML = AVATARS.map(function (a) {
+    return '<button type="button" class="avatar-pick' + (profSelAvatar === a ? " sel" : "") + '" data-av="' + a + '">' + a + '</button>';
+  }).join("");
+  g.querySelectorAll(".avatar-pick").forEach(function (b) {
+    b.onclick = function () { profSelAvatar = b.getAttribute("data-av"); renderAvatarGrid(); };
+  });
+}
+function openProfEdit() {
+  var p = myProfile || {};
+  profSelAvatar = p.avatar || null;
+  renderAvatarGrid();
+  document.getElementById("profNameInput").value = p.display_name || "";
+  document.getElementById("profSigInput").value = p.signature || "";
+  document.getElementById("profEditCard").style.display = "block";
+  document.getElementById("profEditCard").scrollIntoView({ behavior: "smooth" });
+}
+async function saveProfile() {
+  var name = document.getElementById("profNameInput").value.trim();
+  var sig = document.getElementById("profSigInput").value.trim();
+  var btn = document.getElementById("profSaveBtn");
+  btn.disabled = true; btn.textContent = "保存中…";
+  try {
+    await apiPost("/rest/v1/rpc/upsert_profile", { p_device_id: deviceId, p_display_name: name || null, p_avatar: profSelAvatar, p_signature: sig || null });
+    myProfile = { display_name: name || null, avatar: profSelAvatar, signature: sig || null };
+    profileCache[deviceId] = myProfile;
+    toast("主页已保存");
+    document.getElementById("profEditCard").style.display = "none";
+    loadProfile(deviceId);
+  } catch (e) { toast("保存失败，请重试"); }
+  btn.disabled = false; btn.textContent = "保存";
+}
+/* ---------- 编辑自己的帖子 ---------- */
+function startEditPost(postId) {
+  var postEl = document.querySelector('[data-post="' + postId + '"]');
+  if (!postEl) return;
+  var textEl = postEl.querySelector('[data-posttext="' + postId + '"]');
+  if (!textEl || postEl.querySelector(".post-edit-box")) return;
+  var cur = textEl.textContent;
+  var box = document.createElement("div");
+  box.className = "post-edit-box";
+  box.innerHTML = '<textarea maxlength="500">' + esc(cur) + '</textarea><div class="post-edit-row"><button type="button" class="post-edit-cancel">取消</button><button type="button" class="post-edit-save">保存</button></div>';
+  textEl.style.display = "none";
+  textEl.parentNode.insertBefore(box, textEl.nextSibling);
+  var ta = box.querySelector("textarea");
+  ta.focus();
+  box.querySelector(".post-edit-cancel").onclick = function () { box.remove(); textEl.style.display = ""; };
+  box.querySelector(".post-edit-save").onclick = async function () {
+    var v = ta.value.trim();
+    if (!v) { toast("内容不能为空"); return; }
+    if (v.length > 500) { toast("内容不能超过 500 字"); return; }
+    this.disabled = true; this.textContent = "保存中…";
+    try {
+      var r = await apiPost("/rest/v1/rpc/edit_own_post", { p_post_id: postId, p_device_id: deviceId, p_content: v });
+      if (r !== true) throw new Error("保存失败");
+      textEl.textContent = v;
+      box.remove(); textEl.style.display = "";
+      toast("已保存");
+    } catch (e) { toast("保存失败，请重试"); this.disabled = false; this.textContent = "保存"; }
+  };
+}
+/* ---------- 搜索 ---------- */
+async function doSearch() {
+  var q = (document.getElementById("searchInput").value || "").trim();
+  if (!q) { toast("请输入关键词"); return; }
+  var box = document.getElementById("searchBox"), home = document.getElementById("homeMain"), res = document.getElementById("searchResults");
+  document.getElementById("searchTitle").textContent = "搜索“" + q + "”的结果";
+  box.style.display = "block"; home.style.display = "none";
+  res.innerHTML = '<div class="empty">正在搜索……</div>';
+  try {
+    var kw = encodeURIComponent("%" + q.replace(/%/g, "\\%").replace(/_/g, "\\_") + "%");
+    var posts = await apiGet("/rest/v1/posts?select=id,section,title,content,image_url,author_name,is_anonymous,device_id,created_at&or=(content.ilike." + kw + ",title.ilike." + kw + ")&order=created_at.desc&limit=50");
+    if (!posts || !posts.length) { res.innerHTML = '<div class="empty">没有找到包含“' + esc(q) + '”的帖子，换个词试试</div>'; return; }
+    var dids = [];
+    posts.forEach(function (p) { if (!p.is_anonymous && p.device_id && dids.indexOf(p.device_id) < 0) dids.push(p.device_id); });
+    await fetchProfiles(dids);
+    res.innerHTML = posts.map(function (p, i) {
+      var s = sectionBySlug(p.section) || { name: "论坛", slug: p.section };
+      return postHtml(p, s, i);
+    }).join("");
+  } catch (e) {
+    res.innerHTML = '<div class="empty">搜索失败，请检查网络后重试</div>';
+  }
+}
+function clearSearch() {
+  document.getElementById("searchInput").value = "";
+  document.getElementById("searchBox").style.display = "none";
+  document.getElementById("homeMain").style.display = "block";
+}
+/* ---------- 我的帖子 ---------- */
+function myPostIds() {
+  try { return JSON.parse(lsGet("cb_my_posts") || "[]"); } catch (e) { return []; }
+}
+function showMine() { showView("mine"); loadMine(); }
+async function loadMine() {
+  var box = document.getElementById("mineFeed");
+  var ids = myPostIds();
+  if (!ids.length) { box.innerHTML = '<div class="empty">你还没有发过帖子（这台设备上发的才会出现在这里）</div>'; return; }
+  box.innerHTML = '<div class="empty">正在加载……</div>';
+  try {
+    var posts = await apiGet("/rest/v1/posts?select=id,section,title,content,image_url,author_name,is_anonymous,device_id,created_at&id=in.(" + ids.map(encodeURIComponent).join(",") + ")&order=created_at.desc");
+    if (!posts || !posts.length) { box.innerHTML = '<div class="empty">这些帖子可能已被清理（每月 1 号会清库）</div>'; return; }
+    var dids = [];
+    posts.forEach(function (p) { if (!p.is_anonymous && p.device_id && dids.indexOf(p.device_id) < 0) dids.push(p.device_id); });
+    await fetchProfiles(dids);
+    box.innerHTML = posts.map(function (p, i) {
+      var s = sectionBySlug(p.section) || { name: "论坛", slug: p.section };
+      return postHtml(p, s, i);
+    }).join("");
+  } catch (e) {
+    box.innerHTML = '<div class="empty">加载失败，请检查网络后重试</div>';
+  }
 }
 /* v1.1: hash 路由，手机返回键从板块回到首页，而不是退出 */
 function _showHome() {
@@ -621,11 +933,13 @@ function routeFromHash() {
   var h = window.location.hash || "";
   var m = h.match(/^#\/s\/([a-z]+)$/);
   if (m && sectionBySlug(m[1])) { _openSection(m[1]); return; }
+  var u = h.match(/^#\/u\/(.+)$/);
+  if (u) { _openProfile(decodeURIComponent(u[1])); return; }
   _showHome();
 }
 function goHome() {
   var h = window.location.hash || "";
-  if (/^#\/s\//.test(h)) { history.back(); return; }
+  if (/^#\/s\//.test(h) || /^#\/u\//.test(h)) { history.back(); return; }
   _showHome();
 }
 function openSection(slug) {
@@ -723,7 +1037,10 @@ document.getElementById("btnReal").onclick = function () {
   isAnon = false;
   this.classList.add("on"); document.getElementById("btnAnon").classList.remove("on");
   document.getElementById("nameRow").style.display = "flex";
-  document.getElementById("modeHint").textContent = "实名发帖，会显示你的名字";
+  document.getElementById("modeHint").textContent = "实名发帖，会显示你的主页头像和昵称";
+  /* 如果主页里设了昵称，自动填进去 */
+  var inp = document.getElementById("authorName");
+  if (myProfile && myProfile.display_name && !inp.value) inp.value = myProfile.display_name;
 };
 document.getElementById("photo").onchange = function () {
   document.getElementById("fileName").textContent = this.files.length ? this.files[0].name : "";
@@ -733,6 +1050,23 @@ document.getElementById("footHome").onclick = goHome;
 document.getElementById("logoBtn").onclick = goHome;
 document.getElementById("refreshBtn").onclick = function () { if (currentSection) loadFeed(currentSection); };
 document.getElementById("topRefresh").onclick = function () { if (currentSection) loadFeed(currentSection); else loadHome(); };
+/* 排序：最新 / 最热 */
+document.getElementById("sortNew").onclick = function () { setFeedSort("new"); };
+document.getElementById("sortHot").onclick = function () { setFeedSort("hot"); };
+/* 搜索 */
+document.getElementById("searchBtn").onclick = doSearch;
+document.getElementById("searchInput").addEventListener("keydown", function (e) { if (e.key === "Enter") doSearch(); });
+document.getElementById("searchClear").onclick = clearSearch;
+/* 我的帖子 */
+document.getElementById("mineLink").onclick = function () { showMine(); };
+document.getElementById("mineCrumb").onclick = function (e) { if (e) e.preventDefault(); _showHome(); };
+document.getElementById("mineRefresh").onclick = function () { loadMine(); };
+/* 我的主页 */
+document.getElementById("profLink").onclick = function () { openProfile(deviceId); };
+document.getElementById("profCrumb").onclick = function (e) { if (e) e.preventDefault(); _showHome(); };
+document.getElementById("profEditBtn").onclick = function () { openProfEdit(); };
+document.getElementById("profEditCancel").onclick = function () { document.getElementById("profEditCard").style.display = "none"; };
+document.getElementById("profSaveBtn").onclick = function () { saveProfile(); };
 
 /* v1.1: 花瓣特效已移除，改为克制配色 */
 
@@ -797,7 +1131,7 @@ async function loadFeed(slug) {
   feed.innerHTML = skelFeedHtml();
   commentLoaded = {};
   try {
-    var posts = await apiGet("/rest/v1/posts?select=id,section,title,content,image_url,author_name,is_anonymous,created_at&section=eq." + encodeURIComponent(slug) + "&order=created_at.desc&limit=100");
+    var posts = await apiGet("/rest/v1/posts?select=id,section,title,content,image_url,author_name,is_anonymous,device_id,created_at&section=eq." + encodeURIComponent(slug) + "&order=created_at.desc&limit=100");
     var likes = [];
     try { likes = await apiGet("/rest/v1/post_likes?select=post_id,device_id"); } catch (e) { likes = []; }
     likeCount = {}; likedByMe = {};
@@ -810,6 +1144,10 @@ async function loadFeed(slug) {
     commentCount = {};
     (cmtRows || []).forEach(function (c) { commentCount[c.post_id] = (commentCount[c.post_id] || 0) + 1; });
     feedPosts = posts || [];
+    /* 实名帖先批量拿作者主页（头像+昵称），匿名帖不拿 */
+    var dids = [];
+    feedPosts.forEach(function (p) { if (!p.is_anonymous && p.device_id && dids.indexOf(p.device_id) < 0) dids.push(p.device_id); });
+    await fetchProfiles(dids);
     renderFeed(slug);
     if (slug === "contest") renderRank();
   } catch (e) {
@@ -817,6 +1155,7 @@ async function loadFeed(slug) {
   }
 }
 
+var feedSort = "new"; /* 板块内排序：new 最新 / hot 最热（按点赞） */
 function renderFeed(slug) {
   var s = sectionBySlug(slug);
   var feed = document.getElementById("feed");
@@ -826,26 +1165,40 @@ function renderFeed(slug) {
     if (cta) cta.onclick = function () { document.getElementById("content").focus(); window.scrollTo(0, 0); };
     return;
   }
-  feed.innerHTML = feedPosts.map(function (p, i) { return postHtml(p, s, i); }).join("");
+  var list = feedPosts.slice();
+  if (feedSort === "hot") list.sort(function (a, b) { return (likeCount[b.id] || 0) - (likeCount[a.id] || 0); });
+  feed.innerHTML = list.map(function (p, i) { return postHtml(p, s, i); }).join("");
+}
+function setFeedSort(mode) {
+  feedSort = mode;
+  var n = document.getElementById("sortNew"), h = document.getElementById("sortHot");
+  if (n) n.classList.toggle("active", mode === "new");
+  if (h) h.classList.toggle("active", mode === "hot");
+  if (typeof currentSection !== "undefined" && currentSection) renderFeed(currentSection);
 }
 
 function postHtml(p, s, i) {
-  var who = p.is_anonymous ? "匿名" : esc(p.author_name || "实名同学");
-  var av = p.is_anonymous ? "匿" : esc((p.author_name || "同").slice(0, 1));
+  var isAnon = !!p.is_anonymous;
+  /* 匿名：只显示“匿名”，不显示头像姓名，也点不进主页；实名：显示主页头像+昵称，点头像/名字进主页 */
+  var who = isAnon ? "匿名" : esc(profName(p.device_id, p.author_name));
+  var av = isAnon ? "匿" : esc(profAvatar(p.device_id, p.author_name));
+  var whoCls = isAnon ? "who anon" : "who prof";
+  var whoAttr = isAnon ? "" : ' data-prof="' + esc(p.device_id || "") + '"';
   var title = p.title ? '<div class="post-title">' + esc(p.title) + '</div>' : "";
   var img = p.image_url ? imgTag(p.image_url) : "";
   var liked = likedByMe[p.id];
   var isContest = s.slug === "contest";
   var likeLabel = isContest ? (liked ? "已投票" : "投票") : (liked ? "已点赞" : "点赞");
   var del = isMyPost(p.id) ? '<button class="del" data-id="' + p.id + '" type="button">删除</button>' : "";
-  return '<div class="post" style="animation-delay:' + (Math.min(i || 0, 8) * 60) + 'ms">' +
-    '<div class="meta"><span class="avatar">' + av + '</span>' +
-    '<span class="who' + (p.is_anonymous ? " anon" : "") + '">' + who + '</span>' +
+  var edit = isMyPost(p.id) ? '<button class="edit" data-id="' + p.id + '" type="button">编辑</button>' : "";
+  return '<div class="post" data-post="' + p.id + '" style="animation-delay:' + (Math.min(i || 0, 8) * 60) + 'ms">' +
+    '<div class="meta"><span class="avatar"' + whoAttr + '>' + av + '</span>' +
+    '<span class="' + whoCls + '"' + whoAttr + '>' + who + '</span>' +
     '<span class="time">' + timeAgo(p.created_at) + '</span></div>' +
-    title + '<div class="text">' + esc(p.content) + '</div>' + img +
+    title + '<div class="text" data-posttext="' + p.id + '">' + esc(p.content) + '</div>' + img +
     '<div class="actions">' +
     '<button class="like' + (liked ? " liked" : "") + '" data-id="' + p.id + '" type="button"' + (liked ? " disabled" : "") + '>' + likeLabel + ' · ' + (likeCount[p.id] || 0) + '</button>' +
-    '<button class="report" data-id="' + p.id + '" type="button">举报</button>' + del +
+    '<button class="report" data-id="' + p.id + '" type="button">举报</button>' + edit + del +
     '</div>' +
     '<div class="cmt-toggle"><button class="cmt-btn" data-id="' + p.id + '" type="button">评论 · <span data-ccount="' + p.id + '">' + (commentCount[p.id] || 0) + '</span></button></div>' +
     '<div class="cmt-box" data-cmtbox="' + p.id + '">' +
@@ -867,13 +1220,17 @@ function renderRank() {
   var podium = "";
   if (ranked.length) {
     var top3 = ranked.slice(0, 3);
-    var crowns = ["1", "2", "3"];
+    var crowns = ["🥇", "🥈", "🥉"];
     podium = '<div class="podium">' + top3.map(function (p, i) {
       var v = likeCount[p.id] || 0;
       var hot = (i === 0 && v > 0) ? '<span class="podium-hot">热度第一</span>' : "";
+      var initial = esc((p.title || "同").slice(0, 1));
+      var avHtml = p.image_url
+        ? '<div class="pod-avatar"><span>' + initial + '</span><img class="pod-avatar-img" src="' + esc(imgUrl(p.image_url)) + '" alt="选手照片" onerror="this.remove()"></div>'
+        : '<div class="pod-avatar">' + initial + '</div>';
       return '<div class="podium-col podium-' + (i + 1) + '">' +
         '<span class="pod-crown">' + crowns[i] + '</span>' +
-        '<div class="pod-avatar">' + esc((p.title || "同").slice(0, 1)) + '</div>' +
+        avHtml +
         '<div class="pod-name">' + esc(p.title || "未命名") + '</div>' +
         '<div class="pod-votes">' + v + ' 票</div>' + hot +
         '<div class="pod-base">TOP ' + (i + 1) + '</div></div>';
@@ -949,7 +1306,7 @@ document.getElementById("submitBtn").onclick = async function () {
     if (!title) { toast("请填写姓名"); return; }
   }
   if (!content) { toast("先写点内容吧"); return; }
-  var name = isAnon ? null : (document.getElementById("authorName").value.trim() || "实名同学");
+  var name = isAnon ? null : (document.getElementById("authorName").value.trim() || (myProfile && myProfile.display_name) || "实名同学");
   var file = document.getElementById("photo").files[0];
   btn.disabled = true; btn.classList.add("loading"); btn.textContent = "发布中…";
   try {
@@ -1088,12 +1445,17 @@ async function loadComments(pid) {
     var rows = await apiGet("/rest/v1/comments?select=id,post_id,content,author_name,is_anonymous,device_id,created_at&post_id=eq." + pid + "&order=created_at.asc&limit=100");
     commentLoaded[pid] = true;
     if (!rows || !rows.length) { list.innerHTML = '<div class="cmt-empty">还没有评论</div>'; return; }
+    var dids = [];
+    rows.forEach(function (c) { if (!c.is_anonymous && c.device_id && dids.indexOf(c.device_id) < 0) dids.push(c.device_id); });
+    await fetchProfiles(dids);
     list.innerHTML = rows.map(function (c, i) {
-      var who = c.is_anonymous ? "匿名" : esc(c.author_name || "实名同学");
-      var av = c.is_anonymous ? "匿" : esc((c.author_name || "同").slice(0, 1));
+      var isAnon = !!c.is_anonymous;
+      var who = isAnon ? "匿名" : esc(profName(c.device_id, c.author_name));
+      var av = isAnon ? "匿" : esc(profAvatar(c.device_id, c.author_name));
+      var whoAttr = isAnon ? "" : ' data-prof="' + esc(c.device_id || "") + '"';
       var canDel = isMyComment(c.id) || !!adminToken;
       var del = canDel ? '<button class="del-cmt" data-cid="' + c.id + '" data-pid="' + pid + '" type="button">删除</button>' : "";
-      return '<div class="cmt" style="animation-delay:' + (Math.min(i, 6) * 50) + 'ms"><span class="avatar">' + av + '</span><div class="body"><div class="head"><b>' + who + '</b> · ' + timeAgo(c.created_at) + '</div><div class="txt">' + esc(c.content) + '</div>' + del + '</div></div>';
+      return '<div class="cmt" style="animation-delay:' + (Math.min(i, 6) * 50) + 'ms"><span class="avatar"' + whoAttr + '>' + av + '</span><div class="body"><div class="head"><b' + whoAttr + (isAnon ? "" : ' style="color:var(--primary);cursor:pointer"') + '>' + who + '</b> · ' + timeAgo(c.created_at) + '</div><div class="txt">' + esc(c.content) + '</div>' + del + '</div></div>';
     }).join("");
   } catch (e) {
     list.innerHTML = '<div class="cmt-empty">评论加载失败，点一下重新打开试试</div>';
@@ -1104,7 +1466,7 @@ async function submitComment(pid, btn) {
   if (!input) return;
   var content = input.value.trim();
   if (!content) { toast("先写点评论吧"); return; }
-  var name = isAnon ? null : (document.getElementById("authorName").value.trim() || "实名同学");
+  var name = isAnon ? null : (document.getElementById("authorName").value.trim() || (myProfile && myProfile.display_name) || "实名同学");
   btn.disabled = true; btn.textContent = "发送中…";
   try {
     var r = await apiPost("/functions/v1/submit-comment", {
@@ -1360,7 +1722,10 @@ window.addEventListener("hashchange", function () {
 checkDisclaimer();
 checkAnnounce(); /* v1.5: 公告小模块，未读时默认展开+红点 */
 recordVisit(); /* v1.3: 打开就记一次访问（不阻塞页面） */
+loadMyProfile(); /* 个人主页：预加载自己的头像昵称，实名发帖时自动填 */
 if (detectAdmin()) { showView("admin"); loadAdmin(); } else { routeFromHash(); }
 </script>
+<!-- 灯箱：点图片放大 -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()"><button class="lb-close" type="button" aria-label="关闭">×</button><img id="lightboxImg" src="" alt="大图"></div>
 </body>
 </html>
