@@ -311,16 +311,6 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
 .cmt-btn:active { transform: scale(.95); }
 .cmt-btn.open { background: var(--primary); color: #fff; border-color: var(--primary); }
 .cmt-btn:disabled { opacity: .6; }
-.reacts { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
-.react { display: flex; flex-direction: column; align-items: center; gap: 1px; border: 1.5px solid var(--border); background: #fff; border-radius: 12px; padding: 6px 10px 5px; cursor: pointer; min-width: 56px; transition: border-color .2s ease, background .2s ease, transform .15s ease; }
-.react:hover { border-color: var(--primary); }
-.react:active { transform: scale(.95); }
-.react:disabled { opacity: .6; cursor: not-allowed; }
-.react .re { font-size: 18px; line-height: 1.3; }
-.react .re .rc { font-size: 12px; color: var(--text-2); margin-left: 2px; }
-.react .rl { font-size: 11px; color: var(--text-2); line-height: 1.3; }
-.react.mine { border-color: var(--primary); background: var(--primary-soft); }
-.react.mine .rl, .react.mine .re .rc { color: var(--primary); font-weight: 700; }
 .cmt-box { overflow: hidden; max-height: 0; opacity: 0; transition: max-height .3s ease, opacity .25s ease; }
 .cmt-box.open { max-height: 520px; opacity: 1; overflow-y: auto; margin-top: 12px; }
 .cmt-list { background: var(--bg); border-radius: 12px; padding: 4px 12px; }
@@ -340,6 +330,19 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
 .cmt-send:active { transform: scale(.97); }
 .cmt-send:disabled { background: #E4E4E7; cursor: not-allowed; }
 .cmt-empty { text-align: center; color: var(--text-3); font-size: 13px; padding: 14px 0 8px; }
+.cmt .cmt-img { margin-top: 6px; max-width: 220px; border-radius: 10px; display: block; cursor: zoom-in; }
+.cmt-actions { display: flex; gap: 16px; margin-top: 6px; align-items: center; }
+.cmt-like, .cmt-report { border: 0; background: none; color: var(--text-2); font-size: 12px; font-weight: 600; cursor: pointer; padding: 2px 0; display: inline-flex; align-items: center; gap: 3px; }
+.cmt-like:hover { color: var(--danger); }
+.cmt-like.liked { color: var(--danger); }
+.cmt-like:disabled { opacity: .6; cursor: not-allowed; }
+.cmt-report:hover { color: var(--danger); }
+.cmt-more { display: block; width: 100%; text-align: center; border: 0; background: none; color: var(--primary); font-size: 13px; font-weight: 700; cursor: pointer; padding: 10px 0 6px; }
+.cmt-photo-btn { flex: none; border: 1.5px solid var(--border); background: #fff; color: var(--text-2); border-radius: 999px; width: 40px; min-height: 40px; font-size: 18px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+.cmt-photo-btn:hover { border-color: var(--primary); color: var(--primary); }
+.cmt-photo-btn.has { border-color: var(--primary); color: var(--primary); }
+/* 详情页：评论区不限制高度，整页往下滑看全部评论 */
+#postDetail .cmt-box.open { max-height: none; overflow: visible; }
 
 /* ---- 骨架屏 ---- */
 .skel { border-radius: 8px; background: #F4F4F5; animation: skelPulse 1.2s ease-in-out infinite; margin-bottom: 10px; }
@@ -480,6 +483,12 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
   <div id="feed"><div class="empty">正在加载帖子……</div></div>
 </main>
 
+<!-- 帖子详情 -->
+<main id="viewPost" class="wrap" style="display:none">
+  <nav class="crumb"><button type="button" id="postBackBtn">返回</button></nav>
+  <div id="postDetail"></div>
+</main>
+
 <!-- 我的帖子 -->
 <main id="viewMine" class="wrap" style="display:none">
   <nav class="crumb"><a href="#/" id="mineCrumb">首页</a> / <span>我的帖子</span></nav>
@@ -534,6 +543,11 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
     <div style="margin-top:12px"><button class="btn-ghost" id="adminReload" type="button">刷新举报</button></div>
   </section>
   <div id="adminList"><div class="empty">正在加载举报……</div></div>
+  <section class="card" style="margin-top:16px">
+    <h2>评论举报</h2>
+    <p style="font-size:13px;color:#6B7280;line-height:1.7">被举报的评论在这里处理</p>
+  </section>
+  <div id="adminCmtList"><div class="empty">正在加载评论举报……</div></div>
 </main>
 
 <footer>
@@ -685,12 +699,6 @@ async function apiPost(path, body, extraHeaders) {
   if (!res.ok) throw new Error((j && (j.error || j.message)) || ("请求失败（" + res.status + "）"));
   return j;
 }
-async function apiDelete(path) {
-  var res = await apiFetch(path, { method: "DELETE", headers: authHeaders() });
-  var txt = await res.text();
-  if (!res.ok) throw new Error("请求失败（" + res.status + "）");
-  return txt;
-}
 
 /* ---------- small utils ---------- */
 function toast(msg) {
@@ -723,16 +731,6 @@ var adminToken = null;
 var feedPosts = [];
 var likeCount = {};
 var likedByMe = {};
-/* 表情反应：抖音式 5 个表情，1 最差 → 5 最好；碎掉的心不做，负面反馈走举报 */
-var REACTS = [
-  { v: 1, emoji: "😠", label: "非常不满意" },
-  { v: 2, emoji: "😞", label: "不满意" },
-  { v: 3, emoji: "😐", label: "一般" },
-  { v: 4, emoji: "😊", label: "满意" },
-  { v: 5, emoji: "😍", label: "非常满意" }
-];
-var reactCounts = {};
-var reactMine = {};
 
 /* ---------- 个人主页 ---------- */
 var AVATARS = ["🐱", "🐶", "🦊", "🐼", "🐰", "🐻", "⭐", "🌙", "☀️", "🌸", "🚀", "🎵"];
@@ -776,6 +774,7 @@ function showView(v) {
   document.getElementById("viewAdmin").style.display = v === "admin" ? "block" : "none";
   document.getElementById("viewMine").style.display = v === "mine" ? "block" : "none";
   document.getElementById("viewProfile").style.display = v === "profile" ? "block" : "none";
+  document.getElementById("viewPost").style.display = v === "post" ? "block" : "none";
   window.scrollTo(0, 0);
 }
 /* ---------- 个人主页 ---------- */
@@ -958,17 +957,67 @@ function routeFromHash() {
   if (m && sectionBySlug(m[1])) { _openSection(m[1]); return; }
   var u = h.match(/^#\/u\/(.+)$/);
   if (u) { _openProfile(decodeURIComponent(u[1])); return; }
+  var pp = h.match(/^#\/p\/([0-9a-f\-]{36})$/);
+  if (pp) { _openPost(pp[1]); return; }
   _showHome();
 }
 function goHome() {
   var h = window.location.hash || "";
-  if (/^#\/s\//.test(h) || /^#\/u\//.test(h)) { history.back(); return; }
+  if (/^#\/s\//.test(h) || /^#\/u\//.test(h) || /^#\/p\//.test(h)) { history.back(); return; }
   _showHome();
 }
 function openSection(slug) {
   if ((window.location.hash || "") === "#/s/" + slug) { _openSection(slug); return; }
   window.location.hash = "#/s/" + slug;
 }
+
+/* ---------- 帖子详情页：点开帖子单独进入，往下滑是全部评论 ---------- */
+var detailPostId = null;
+async function _openPost(id) {
+  detailPostId = id;
+  var box = document.getElementById("postDetail");
+  box.innerHTML = '<div class="empty">正在加载帖子……</div>';
+  showView("post");
+  try {
+    var rows = await apiGet("/rest/v1/posts?select=id,section,title,content,image_url,author_name,is_anonymous,device_id,created_at&id=eq." + id + "&limit=1");
+    var p = rows && rows[0];
+    if (!p) { box.innerHTML = '<div class="empty">帖子不存在或已被删除</div>'; return; }
+    var s = sectionBySlug(p.section) || { name: "", icon: "heart" };
+    /* 点赞数和评论数 */
+    var likes = [];
+    try { likes = await apiGet("/rest/v1/post_likes?select=post_id,device_id&post_id=eq." + id); } catch (e) { likes = []; }
+    likeCount = {}; likedByMe = {};
+    (likes || []).forEach(function (l) {
+      likeCount[l.post_id] = (likeCount[l.post_id] || 0) + 1;
+      if (l.device_id === deviceId) likedByMe[l.post_id] = true;
+    });
+    var cmtRows = [];
+    try { cmtRows = await apiGet("/rest/v1/comments?select=post_id&post_id=eq." + id + "&limit=1000"); } catch (e) { cmtRows = []; }
+    commentCount = {};
+    (cmtRows || []).forEach(function (c) { commentCount[c.post_id] = (commentCount[c.post_id] || 0) + 1; });
+    var dids = [];
+    if (!p.is_anonymous && p.device_id) dids.push(p.device_id);
+    await fetchProfiles(dids);
+    box.innerHTML = postHtml(p, s, 0);
+    /* 详情页默认展开评论并加载全部 */
+    var cmtBox = document.querySelector('#postDetail [data-cmtbox="' + id + '"]');
+    var cmtBtn = document.querySelector('#postDetail .cmt-btn[data-id="' + id + '"]');
+    if (cmtBox) cmtBox.classList.add("open");
+    if (cmtBtn) cmtBtn.classList.add("open");
+    commentLoaded[id] = false;
+    loadComments(id, true);
+  } catch (e) {
+    box.innerHTML = '<div class="empty">加载失败，请返回重试</div>';
+  }
+}
+function openPost(id) {
+  if ((window.location.hash || "") === "#/p/" + id) { _openPost(id); return; }
+  window.location.hash = "#/p/" + id;
+}
+document.getElementById("postBackBtn").onclick = function () {
+  if ((window.location.hash || "").indexOf("#/p/") === 0) { history.back(); return; }
+  _showHome();
+};
 
 /* ---------- disclaimer ---------- */
 function checkDisclaimer() {
@@ -1162,14 +1211,6 @@ async function loadFeed(slug) {
       likeCount[l.post_id] = (likeCount[l.post_id] || 0) + 1;
       if (l.device_id === deviceId) likedByMe[l.post_id] = true;
     });
-    var reacts = [];
-    try { reacts = await apiGet("/rest/v1/post_reactions?select=post_id,device_id,reaction"); } catch (e) { reacts = []; }
-    reactCounts = {}; reactMine = {};
-    (reacts || []).forEach(function (r) {
-      if (!reactCounts[r.post_id]) reactCounts[r.post_id] = {};
-      reactCounts[r.post_id][r.reaction] = (reactCounts[r.post_id][r.reaction] || 0) + 1;
-      if (r.device_id === deviceId) reactMine[r.post_id] = r.reaction;
-    });
     var cmtRows = [];
     try { cmtRows = await apiGet("/rest/v1/comments?select=post_id&limit=1000"); } catch (e) { cmtRows = []; }
     commentCount = {};
@@ -1208,17 +1249,6 @@ function setFeedSort(mode) {
   if (typeof currentSection !== "undefined" && currentSection) renderFeed(currentSection);
 }
 
-function reactsHtml(id) {
-  return REACTS.map(function (rc) {
-    var n = (reactCounts[id] && reactCounts[id][rc.v]) || 0;
-    var mine = reactMine[id] === rc.v;
-    return '<button class="react' + (mine ? " mine" : "") + '" data-id="' + id + '" data-r="' + rc.v + '" type="button" title="' + rc.label + '"><span class="re">' + rc.emoji + '<span class="rc">' + n + '</span></span><span class="rl">' + rc.label + '</span></button>';
-  }).join("");
-}
-function refreshReacts(id) {
-  var box = document.querySelector('[data-reacts="' + id + '"]');
-  if (box) box.innerHTML = reactsHtml(id);
-}
 function postHtml(p, s, i) {
   var isAnon = !!p.is_anonymous;
   /* 匿名：只显示“匿名”，不显示头像姓名，也点不进主页；实名：显示主页头像+昵称，点头像/名字进主页 */
@@ -1242,11 +1272,10 @@ function postHtml(p, s, i) {
     '<button class="like' + (liked ? " liked" : "") + '" data-id="' + p.id + '" type="button"' + (liked ? " disabled" : "") + '>' + likeLabel + ' · ' + (likeCount[p.id] || 0) + '</button>' +
     '<button class="report" data-id="' + p.id + '" type="button">举报</button>' + edit + del +
     '</div>' +
-    '<div class="reacts" data-reacts="' + p.id + '">' + reactsHtml(p.id) + '</div>' +
     '<div class="cmt-toggle"><button class="cmt-btn" data-id="' + p.id + '" type="button">评论 · <span data-ccount="' + p.id + '">' + (commentCount[p.id] || 0) + '</span></button></div>' +
     '<div class="cmt-box" data-cmtbox="' + p.id + '">' +
     '<div class="cmt-list" data-cmtlist="' + p.id + '"></div>' +
-    '<div class="cmt-input-row"><input type="text" class="cmt-input" data-cmtinput="' + p.id + '" maxlength="300" placeholder="写评论……"><button class="cmt-send" data-id="' + p.id + '" type="button">发送</button></div>' +
+    '<div class="cmt-input-row"><label class="cmt-photo-btn" title="上传照片">＋<input type="file" class="cmt-photo" data-cmtphoto="' + p.id + '" accept="image/*" style="display:none"></label><input type="text" class="cmt-input" data-cmtinput="' + p.id + '" maxlength="300" placeholder="写评论……"><button class="cmt-send" data-id="' + p.id + '" type="button">发送</button></div>' +
     '</div>' +
     '<div class="report-box" data-report="' + p.id + '" style="display:none"><div style="font-size:13px;color:#999;margin-bottom:6px">请选择举报理由：</div>' +
     REPORT_REASONS.map(function (r) { return '<button class="reason-chip" data-id="' + p.id + '" data-reason="' + r + '" type="button">' + r + '</button>'; }).join("") +
@@ -1389,11 +1418,10 @@ document.getElementById("submitBtn").onclick = async function () {
 };
 
 /* ---------- feed actions: like / report / own delete ---------- */
-document.getElementById("feed").addEventListener("click", function (ev) {
+/* 帖子卡片里的所有按钮（点赞/举报/评论/评论点赞/评论举报/查看全部）——列表和详情页共用 */
+function postCardClick(ev) {
   var t = ev.target;
   if (t.classList.contains("like")) { doLike(t); return; }
-  var rb = t.closest ? t.closest(".react") : null;
-  if (rb) { doReact(rb); return; }
   if (t.classList.contains("report")) {
     var box = document.querySelector('[data-report="' + t.getAttribute("data-id") + '"]');
     if (box) box.style.display = box.style.display === "none" ? "block" : "none";
@@ -1412,12 +1440,31 @@ document.getElementById("feed").addEventListener("click", function (ev) {
   if (t.classList.contains("cmt-btn")) { toggleComments(t.getAttribute("data-id"), t); return; }
   if (t.classList.contains("cmt-send")) { submitComment(t.getAttribute("data-id"), t); return; }
   if (t.classList.contains("del-cmt")) { deleteComment(t.getAttribute("data-cid"), t.getAttribute("data-pid"), t); return; }
-});
-document.getElementById("feed").addEventListener("keydown", function (ev) {
+  if (t.classList.contains("cmt-like")) { doCmtLike(t); return; }
+  if (t.classList.contains("cmt-report")) { doCmtReport(t.getAttribute("data-cid"), t.getAttribute("data-pid"), t); return; }
+  if (t.classList.contains("cmt-reason")) { submitCmtReport(t.getAttribute("data-cid"), t.getAttribute("data-pid"), t.getAttribute("data-reason"), t); return; }
+  if (t.classList.contains("cmt-reason-cancel")) { var cb = document.querySelector('[data-cmtreport="' + t.getAttribute("data-cid") + '"]'); if (cb) cb.style.display = "none"; return; }
+  if (t.classList.contains("cmt-more")) { openPost(t.getAttribute("data-postid")); return; }
+}
+function postCardKeydown(ev) {
   if (ev.key === "Enter" && ev.target.classList.contains("cmt-input")) {
     var pid = ev.target.getAttribute("data-cmtinput");
     var btn = document.querySelector('.cmt-send[data-id="' + pid + '"]');
     if (btn) submitComment(pid, btn);
+  }
+}
+document.getElementById("feed").addEventListener("click", postCardClick);
+document.getElementById("feed").addEventListener("keydown", postCardKeydown);
+document.getElementById("postDetail").addEventListener("click", postCardClick);
+document.getElementById("postDetail").addEventListener("keydown", postCardKeydown);
+/* 评论上传照片：选了图就把按钮变绿打勾 */
+document.addEventListener("change", function (ev) {
+  var t = ev.target;
+  if (t && t.classList && t.classList.contains("cmt-photo")) {
+    var label = t.closest(".cmt-photo-btn");
+    if (!label) return;
+    if (t.files && t.files[0]) { label.classList.add("has"); label.firstChild.textContent = "✓"; label.title = t.files[0].name; }
+    else { label.classList.remove("has"); label.firstChild.textContent = "＋"; label.title = "上传照片"; }
   }
 });
 
@@ -1439,31 +1486,6 @@ async function doLike(btn) {
     setTimeout(function () { if (plus.parentNode) plus.parentNode.removeChild(plus); }, 850);
     if (isContest) renderRank();
   } catch (e) { toast("操作失败，请重试"); btn.disabled = false; }
-}
-
-async function doReact(btn) {
-  var id = btn.getAttribute("data-id");
-  var v = parseInt(btn.getAttribute("data-r"), 10);
-  var cur = reactMine[id];
-  btn.disabled = true;
-  try {
-    /* 先删掉本设备在这帖的旧表情；点同一个就是取消，点别的就是换一个 */
-    await apiDelete("/rest/v1/post_reactions?post_id=eq." + encodeURIComponent(id) + "&device_id=eq." + encodeURIComponent(deviceId));
-    if (cur === v) {
-      if (reactCounts[id]) reactCounts[id][v] = Math.max(0, (reactCounts[id][v] || 0) - 1);
-      delete reactMine[id];
-    } else {
-      if (cur) {
-        if (reactCounts[id]) reactCounts[id][cur] = Math.max(0, (reactCounts[id][cur] || 0) - 1);
-      }
-      await apiPost("/rest/v1/post_reactions", { post_id: id, device_id: deviceId, reaction: v });
-      if (!reactCounts[id]) reactCounts[id] = {};
-      reactCounts[id][v] = (reactCounts[id][v] || 0) + 1;
-      reactMine[id] = v;
-    }
-    refreshReacts(id);
-  } catch (e) { toast("操作失败，请重试"); }
-  btn.disabled = false;
 }
 
 async function doReport(id, reason, chip) {
@@ -1496,6 +1518,8 @@ async function doDelete(btn) {
 
 /* ---------- comments ---------- */
 var commentCount = {};
+var cmtLikeCount = {};
+var cmtLikedByMe = {};
 var commentLoaded = {};
 function myComments() { try { return JSON.parse(lsGet("cb_my_comments") || "[]"); } catch (e) { return []; } }
 function addMyComment(id) { var a = myComments(); if (a.indexOf(id) < 0) a.push(id); lsSet("cb_my_comments", JSON.stringify(a)); }
@@ -1509,28 +1533,50 @@ function toggleComments(pid, btn) {
   if (!box) return;
   var open = box.classList.toggle("open");
   btn.classList.toggle("open", open);
-  if (open && !commentLoaded[pid]) loadComments(pid);
+  if (open && !commentLoaded[pid]) loadComments(pid, isPostDetail(pid));
 }
-async function loadComments(pid) {
+/* 单条评论：头像+名字+时间+文字+图片+点赞♥+举报+删除 */
+function commentHtml(c, pid) {
+  var isAnon = !!c.is_anonymous;
+  var who = isAnon ? "匿名" : esc(profName(c.device_id, c.author_name));
+  var av = isAnon ? "匿" : esc(profAvatar(c.device_id, c.author_name));
+  var whoAttr = isAnon ? "" : ' data-prof="' + esc(c.device_id || "") + '"';
+  var canDel = isMyComment(c.id) || !!adminToken;
+  var del = canDel ? '<button class="del-cmt" data-cid="' + c.id + '" data-pid="' + pid + '" type="button">删除</button>' : "";
+  var img = c.image_url ? '<img class="post-img cmt-img" src="' + esc(imgUrl(c.image_url)) + '" loading="lazy" alt="评论图片" data-full="' + esc(c.image_url) + '" onerror="this.onerror=null;this.src=\'' + esc(c.image_url) + '\'">' : "";
+  var liked = cmtLikedByMe[c.id];
+  var lc = cmtLikeCount[c.id] || 0;
+  return '<div class="cmt"><span class="avatar"' + whoAttr + '>' + av + '</span><div class="body"><div class="head"><b' + whoAttr + (isAnon ? "" : ' style="color:var(--primary);cursor:pointer"') + '>' + who + '</b> · ' + timeAgo(c.created_at) + '</div><div class="txt">' + esc(c.content) + '</div>' + img +
+    '<div class="cmt-actions"><button class="cmt-like' + (liked ? " liked" : "") + '" data-cid="' + c.id + '" type="button"' + (liked ? " disabled" : "") + '>♥ ' + lc + '</button>' +
+    '<button class="cmt-report" data-cid="' + c.id + '" data-pid="' + pid + '" type="button">举报</button>' + del + '</div>' +
+    '</div></div>';
+}
+/* full=false：在帖子列表里默认只展示前 2 条，下面给“查看全部”进详情页；full=true：详情页展示全部 */
+async function loadComments(pid, full) {
   var list = document.querySelector('[data-cmtlist="' + pid + '"]');
   if (!list) return;
   list.innerHTML = '<div class="cmt-empty">评论加载中……</div>';
   try {
-    var rows = await apiGet("/rest/v1/comments?select=id,post_id,content,author_name,is_anonymous,device_id,created_at&post_id=eq." + pid + "&order=created_at.asc&limit=100");
+    var rows = await apiGet("/rest/v1/comments?select=id,post_id,content,image_url,image_path,author_name,is_anonymous,device_id,created_at&post_id=eq." + pid + "&order=created_at.asc&limit=100");
     commentLoaded[pid] = true;
     if (!rows || !rows.length) { list.innerHTML = '<div class="cmt-empty">还没有评论</div>'; return; }
     var dids = [];
     rows.forEach(function (c) { if (!c.is_anonymous && c.device_id && dids.indexOf(c.device_id) < 0) dids.push(c.device_id); });
     await fetchProfiles(dids);
-    list.innerHTML = rows.map(function (c, i) {
-      var isAnon = !!c.is_anonymous;
-      var who = isAnon ? "匿名" : esc(profName(c.device_id, c.author_name));
-      var av = isAnon ? "匿" : esc(profAvatar(c.device_id, c.author_name));
-      var whoAttr = isAnon ? "" : ' data-prof="' + esc(c.device_id || "") + '"';
-      var canDel = isMyComment(c.id) || !!adminToken;
-      var del = canDel ? '<button class="del-cmt" data-cid="' + c.id + '" data-pid="' + pid + '" type="button">删除</button>' : "";
-      return '<div class="cmt" style="animation-delay:' + (Math.min(i, 6) * 50) + 'ms"><span class="avatar"' + whoAttr + '>' + av + '</span><div class="body"><div class="head"><b' + whoAttr + (isAnon ? "" : ' style="color:var(--primary);cursor:pointer"') + '>' + who + '</b> · ' + timeAgo(c.created_at) + '</div><div class="txt">' + esc(c.content) + '</div>' + del + '</div></div>';
-    }).join("");
+    /* 评论点赞 */
+    var cids = rows.map(function (c) { return c.id; });
+    var likes = [];
+    try { likes = await apiGet("/rest/v1/comment_likes?select=comment_id,device_id&comment_id=in.(" + cids.map(encodeURIComponent).join(",") + ")"); } catch (e) { likes = []; }
+    (likes || []).forEach(function (l) {
+      cmtLikeCount[l.comment_id] = (cmtLikeCount[l.comment_id] || 0) + 1;
+      if (l.device_id === deviceId) cmtLikedByMe[l.comment_id] = true;
+    });
+    var shown = full ? rows : rows.slice(0, 2);
+    var html = shown.map(function (c, i) { return commentHtml(c, pid); }).join("");
+    if (!full && rows.length > 2) {
+      html += '<button class="cmt-more" data-postid="' + pid + '" type="button">查看全部 ' + rows.length + ' 条评论</button>';
+    }
+    list.innerHTML = html;
   } catch (e) {
     list.innerHTML = '<div class="cmt-empty">评论加载失败，点一下重新打开试试</div>';
   }
@@ -1541,19 +1587,37 @@ async function submitComment(pid, btn) {
   var content = input.value.trim();
   if (!content) { toast("先写点评论吧"); return; }
   var name = isAnon ? null : (document.getElementById("authorName").value.trim() || (myProfile && myProfile.display_name) || "实名同学");
+  var photoInput = document.querySelector('[data-cmtphoto="' + pid + '"]');
+  var file = photoInput && photoInput.files ? photoInput.files[0] : null;
   btn.disabled = true; btn.textContent = "发送中…";
   try {
+    var imageUrl = null, imagePath = null;
+    if (file) {
+      var up0 = await compressImage(file); /* 和发帖一样，先压到 500KB 以内再上传 */
+      var upFile = up0.blob, upName = up0.name, upType = up0.type;
+      imagePath = Date.now() + "_" + Math.random().toString(36).slice(2) + "_" + upName.replace(/[^\w.\-]+/g, "_");
+      var up = await apiFetch("/storage/v1/object/confession-images/" + imagePath, {
+        method: "POST",
+        headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY, "Content-Type": upType || "application/octet-stream" },
+        body: upFile
+      });
+      if (!up.ok) throw new Error("照片上传失败，请重试");
+      imageUrl = (proxyOn() ? PROXY_URL : SUPABASE_URL) + "/storage/v1/object/public/confession-images/" + imagePath;
+    }
     var r = await apiPost("/functions/v1/submit-comment", {
-      post_id: pid, content: content, author_name: name, is_anonymous: isAnon, device_id: deviceId
+      post_id: pid, content: content, author_name: name, is_anonymous: isAnon, device_id: deviceId,
+      image_url: imageUrl, image_path: imagePath
     });
     if (!r || r.error) throw new Error((r && r.error) || "评论失败");
     if (!r.id) throw new Error("评论失败，请重试");
     addMyComment(r.id);
     input.value = "";
+    if (photoInput) { photoInput.value = ""; var pb = photoInput.closest(".cmt-photo-btn"); if (pb) { pb.classList.remove("has"); pb.firstChild.textContent = "＋"; } }
     commentCount[pid] = (commentCount[pid] || 0) + 1;
     updateCmtCount(pid);
     toast("评论成功");
-    loadComments(pid);
+    commentLoaded[pid] = false;
+    loadComments(pid, isPostDetail(pid));
   } catch (e) { toast(e.message || "评论失败，请重试"); }
   btn.disabled = false; btn.textContent = "发送";
 }
@@ -1578,8 +1642,51 @@ async function deleteComment(cid, pid, btn) {
     commentCount[pid] = Math.max(0, (commentCount[pid] || 1) - 1);
     updateCmtCount(pid);
     toast("已删除");
-    loadComments(pid);
+    commentLoaded[pid] = false;
+    loadComments(pid, isPostDetail(pid));
   } catch (e) { toast("删除失败，请重试"); btn.disabled = false; }
+}
+
+/* 帖子是否正在详情页打开（详情页看全部评论，列表页默认只看 2 条） */
+function isPostDetail(pid) {
+  return document.getElementById("viewPost").style.display !== "none" &&
+    document.querySelector('#postDetail [data-post="' + pid + '"]') !== null;
+}
+
+async function doCmtLike(btn) {
+  var cid = btn.getAttribute("data-cid");
+  btn.disabled = true;
+  try {
+    await apiPost("/rest/v1/comment_likes", { comment_id: cid, device_id: deviceId });
+    cmtLikedByMe[cid] = true;
+    cmtLikeCount[cid] = (cmtLikeCount[cid] || 0) + 1;
+    btn.classList.add("liked");
+    btn.innerHTML = "♥ " + cmtLikeCount[cid];
+  } catch (e) { toast("操作失败，请重试"); btn.disabled = false; }
+}
+
+async function doCmtReport(cid, pid, btn) {
+  /* 评论举报：复用帖子举报的理由列表，提交到 comment_reports（碎掉的心不做） */
+  var box = document.querySelector('[data-cmtreport="' + cid + '"]');
+  if (box) { box.style.display = box.style.display === "none" ? "block" : "none"; return; }
+  var wrap = btn.closest(".body") || btn.parentNode;
+  var div = document.createElement("div");
+  div.className = "report-box";
+  div.setAttribute("data-cmtreport", cid);
+  div.innerHTML = '<div style="font-size:13px;color:#999;margin-bottom:6px">请选择举报理由：</div>' +
+    REPORT_REASONS.map(function (r) { return '<button class="reason-chip cmt-reason" data-cid="' + cid + '" data-pid="' + pid + '" data-reason="' + r + '" type="button">' + r + '</button>'; }).join("") +
+    '<button class="reason-chip cancel cmt-reason-cancel" data-cid="' + cid + '" type="button">取消</button>';
+  wrap.appendChild(div);
+}
+
+async function submitCmtReport(cid, pid, reason, chip) {
+  chip.disabled = true;
+  try {
+    await apiPost("/rest/v1/comment_reports", { comment_id: cid, post_id: pid, reason: reason, device_id: deviceId });
+    toast("举报已提交，管理员会处理");
+    var box = document.querySelector('[data-cmtreport="' + cid + '"]');
+    if (box) box.remove();
+  } catch (e) { toast("举报失败，请重试"); chip.disabled = false; }
 }
 
 /* ---------- admin (password set by the owner; only its SHA-256 hash is stored) ---------- */
@@ -1672,7 +1779,47 @@ async function loadAdmin() {
         '</div>';
     }).join("");
   } catch (e) { list.innerHTML = '<div class="empty">加载失败：口令无效或网络异常<br><button class="btn-ghost" style="margin-top:12px" onclick="loadAdmin()">↻ 重新加载</button></div>'; }
+  loadCmtReports();
 }
+
+/* ---------- 评论举报（管理员） ---------- */
+async function loadCmtReports() {
+  var list = document.getElementById("adminCmtList");
+  if (!list) return;
+  list.innerHTML = '<div class="empty">正在加载评论举报……</div>';
+  try {
+    var rows = await apiPost("/rest/v1/rpc/admin_list_comment_reports", { p_token: adminToken });
+    rows = Array.isArray(rows) ? rows : (rows && rows.data) || [];
+    if (!rows.length) { list.innerHTML = '<div class="empty">没有待处理的评论举报</div>'; return; }
+    list.innerHTML = rows.map(function (r) {
+      var s = sectionBySlug(r.section) || { name: r.section || "" };
+      return '<div class="admin-row">' +
+        '<div style="font-size:13px;color:#6B7280;margin-bottom:6px">' + s.name + ' · ' + timeAgo(r.created_at) + ' · 被举报 <b style="color:#d32f2f">' + (r.report_count || 1) + ' 次</b></div>' +
+        '<div style="font-size:15px;line-height:1.6">' + esc(r.content || "") + '</div>' +
+        (r.image_url ? imgTag(r.image_url, "width:100%;border-radius:10px;margin-top:8px;display:block") : "") +
+        '<div style="font-size:13px;color:#666;margin-top:8px">作者：' + (r.is_anonymous ? "匿名" : esc(r.author_name || "实名同学")) + ' · 理由：' + esc(Array.isArray(r.reasons) ? r.reasons.join("、") : (r.reasons || "未注明")) + '</div>' +
+        '<div style="margin-top:10px;display:flex;gap:10px"><button class="btn-danger" data-cmtact="del" data-cid="' + r.comment_id + '" type="button">删除评论</button><button class="btn-ghost" data-cmtact="dismiss" data-cid="' + r.comment_id + '" type="button">忽略举报</button></div>' +
+        '</div>';
+    }).join("");
+  } catch (e) { list.innerHTML = '<div class="empty">加载失败</div>'; }
+}
+document.getElementById("adminCmtList").addEventListener("click", async function (ev) {
+  var t = ev.target;
+  var act = t.getAttribute("data-cmtact");
+  if (!act) return;
+  var cid = t.getAttribute("data-cid");
+  t.disabled = true;
+  try {
+    if (act === "del") {
+      await apiPost("/rest/v1/rpc/admin_delete_comment", { p_token: adminToken, p_comment_id: cid });
+      toast("已删除该评论");
+    } else {
+      await apiPost("/rest/v1/rpc/admin_dismiss_comment_reports", { p_token: adminToken, p_comment_id: cid });
+      toast("已忽略该举报");
+    }
+    loadCmtReports();
+  } catch (e) { toast("操作失败，请重试"); t.disabled = false; }
+});
 
 /* ---------- v1.3: 访问统计 ---------- */
 function recordVisit() {
