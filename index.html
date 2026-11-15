@@ -992,20 +992,25 @@ async function _openPost(id) {
       if (l.device_id === deviceId) likedByMe[l.post_id] = true;
     });
     var cmtRows = [];
-    try { cmtRows = await apiGet("/rest/v1/comments?select=post_id&post_id=eq." + id + "&limit=1000"); } catch (e) { cmtRows = []; }
-    commentCount = {};
-    (cmtRows || []).forEach(function (c) { commentCount[c.post_id] = (commentCount[c.post_id] || 0) + 1; });
+    try { cmtRows = await apiGet("/rest/v1/comments?select=id,post_id,content,image_url,author_name,is_anonymous,device_id,created_at&post_id=eq." + id + "&order=created_at.asc&limit=100"); } catch (e) { cmtRows = []; }
+    commentCount = {}; feedComments = {};
+    (cmtRows || []).forEach(function (c) {
+      commentCount[c.post_id] = (commentCount[c.post_id] || 0) + 1;
+      if (!feedComments[c.post_id]) feedComments[c.post_id] = [];
+      feedComments[c.post_id].push(c);
+    });
+    var cmtLikes = [];
+    try { cmtLikes = await apiGet("/rest/v1/comment_likes?select=comment_id,device_id&limit=2000"); } catch (e) { cmtLikes = []; }
+    cmtLikeCount = {}; cmtLikedByMe = {};
+    (cmtLikes || []).forEach(function (l) {
+      cmtLikeCount[l.comment_id] = (cmtLikeCount[l.comment_id] || 0) + 1;
+      if (l.device_id === deviceId) cmtLikedByMe[l.comment_id] = true;
+    });
     var dids = [];
     if (!p.is_anonymous && p.device_id) dids.push(p.device_id);
+    (cmtRows || []).forEach(function (c) { if (!c.is_anonymous && c.device_id && dids.indexOf(c.device_id) < 0) dids.push(c.device_id); });
     await fetchProfiles(dids);
-    box.innerHTML = postHtml(p, s, 0);
-    /* 详情页默认展开评论并加载全部 */
-    var cmtBox = document.querySelector('#postDetail [data-cmtbox="' + id + '"]');
-    var cmtBtn = document.querySelector('#postDetail .cmt-btn[data-id="' + id + '"]');
-    if (cmtBox) cmtBox.classList.add("open");
-    if (cmtBtn) cmtBtn.classList.add("open");
-    commentLoaded[id] = false;
-    loadComments(id, true);
+    box.innerHTML = postHtml(p, s, 0, true);
   } catch (e) {
     box.innerHTML = '<div class="empty">加载失败，请返回重试</div>';
   }
@@ -1212,13 +1217,25 @@ async function loadFeed(slug) {
       if (l.device_id === deviceId) likedByMe[l.post_id] = true;
     });
     var cmtRows = [];
-    try { cmtRows = await apiGet("/rest/v1/comments?select=post_id&limit=1000"); } catch (e) { cmtRows = []; }
-    commentCount = {};
-    (cmtRows || []).forEach(function (c) { commentCount[c.post_id] = (commentCount[c.post_id] || 0) + 1; });
+    try { cmtRows = await apiGet("/rest/v1/comments?select=id,post_id,content,image_url,author_name,is_anonymous,device_id,created_at&order=created_at.asc&limit=1000"); } catch (e) { cmtRows = []; }
+    commentCount = {}; feedComments = {};
+    (cmtRows || []).forEach(function (c) {
+      commentCount[c.post_id] = (commentCount[c.post_id] || 0) + 1;
+      if (!feedComments[c.post_id]) feedComments[c.post_id] = [];
+      feedComments[c.post_id].push(c);
+    });
+    var cmtLikes = [];
+    try { cmtLikes = await apiGet("/rest/v1/comment_likes?select=comment_id,device_id&limit=2000"); } catch (e) { cmtLikes = []; }
+    cmtLikeCount = {}; cmtLikedByMe = {};
+    (cmtLikes || []).forEach(function (l) {
+      cmtLikeCount[l.comment_id] = (cmtLikeCount[l.comment_id] || 0) + 1;
+      if (l.device_id === deviceId) cmtLikedByMe[l.comment_id] = true;
+    });
     feedPosts = posts || [];
-    /* 实名帖先批量拿作者主页（头像+昵称），匿名帖不拿 */
+    /* 实名帖和实名评论先批量拿作者主页（头像+昵称），匿名帖不拿 */
     var dids = [];
     feedPosts.forEach(function (p) { if (!p.is_anonymous && p.device_id && dids.indexOf(p.device_id) < 0) dids.push(p.device_id); });
+    (cmtRows || []).forEach(function (c) { if (!c.is_anonymous && c.device_id && dids.indexOf(c.device_id) < 0) dids.push(c.device_id); });
     await fetchProfiles(dids);
     renderFeed(slug);
     if (slug === "contest") renderRank();
@@ -1249,7 +1266,7 @@ function setFeedSort(mode) {
   if (typeof currentSection !== "undefined" && currentSection) renderFeed(currentSection);
 }
 
-function postHtml(p, s, i) {
+function postHtml(p, s, i, full) {
   var isAnon = !!p.is_anonymous;
   /* 匿名：只显示“匿名”，不显示头像姓名，也点不进主页；实名：显示主页头像+昵称，点头像/名字进主页 */
   var who = isAnon ? "匿名" : esc(profName(p.device_id, p.author_name));
@@ -1272,9 +1289,8 @@ function postHtml(p, s, i) {
     '<button class="like' + (liked ? " liked" : "") + '" data-id="' + p.id + '" type="button"' + (liked ? " disabled" : "") + '>' + likeLabel + ' · ' + (likeCount[p.id] || 0) + '</button>' +
     '<button class="report" data-id="' + p.id + '" type="button">举报</button>' + edit + del +
     '</div>' +
-    '<div class="cmt-toggle"><button class="cmt-btn" data-id="' + p.id + '" type="button">评论 · <span data-ccount="' + p.id + '">' + (commentCount[p.id] || 0) + '</span></button></div>' +
-    '<div class="cmt-box" data-cmtbox="' + p.id + '">' +
-    '<div class="cmt-list" data-cmtlist="' + p.id + '"></div>' +
+    '<div class="cmt-box open" data-cmtbox="' + p.id + '">' +
+    '<div class="cmt-list" data-cmtlist="' + p.id + '">' + cmtListHtml(p.id, full) + '</div>' +
     '<div class="cmt-input-row"><label class="cmt-photo-btn" title="上传照片">＋<input type="file" class="cmt-photo" data-cmtphoto="' + p.id + '" accept="image/*" style="display:none"></label><input type="text" class="cmt-input" data-cmtinput="' + p.id + '" maxlength="300" placeholder="写评论……"><button class="cmt-send" data-id="' + p.id + '" type="button">发送</button></div>' +
     '</div>' +
     '<div class="report-box" data-report="' + p.id + '" style="display:none"><div style="font-size:13px;color:#999;margin-bottom:6px">请选择举报理由：</div>' +
@@ -1437,7 +1453,6 @@ function postCardClick(ev) {
     return;
   }
   if (t.classList.contains("del")) { doDelete(t); return; }
-  if (t.classList.contains("cmt-btn")) { toggleComments(t.getAttribute("data-id"), t); return; }
   if (t.classList.contains("cmt-send")) { submitComment(t.getAttribute("data-id"), t); return; }
   if (t.classList.contains("del-cmt")) { deleteComment(t.getAttribute("data-cid"), t.getAttribute("data-pid"), t); return; }
   if (t.classList.contains("cmt-like")) { doCmtLike(t); return; }
@@ -1518,6 +1533,7 @@ async function doDelete(btn) {
 
 /* ---------- comments ---------- */
 var commentCount = {};
+var feedComments = {}; /* 帖子 id → 该帖的全部评论（loadFeed 一次拉取，默认直接展示） */
 var cmtLikeCount = {};
 var cmtLikedByMe = {};
 var commentLoaded = {};
@@ -1527,13 +1543,6 @@ function isMyComment(id) { return myComments().indexOf(id) >= 0; }
 function updateCmtCount(pid) {
   var el = document.querySelector('[data-ccount="' + pid + '"]');
   if (el) el.textContent = commentCount[pid] || 0;
-}
-function toggleComments(pid, btn) {
-  var box = document.querySelector('[data-cmtbox="' + pid + '"]');
-  if (!box) return;
-  var open = box.classList.toggle("open");
-  btn.classList.toggle("open", open);
-  if (open && !commentLoaded[pid]) loadComments(pid, isPostDetail(pid));
 }
 /* 单条评论：头像+名字+时间+文字+图片+点赞♥+举报+删除 */
 function commentHtml(c, pid) {
@@ -1551,34 +1560,41 @@ function commentHtml(c, pid) {
     '<button class="cmt-report" data-cid="' + c.id + '" data-pid="' + pid + '" type="button">举报</button>' + del + '</div>' +
     '</div></div>';
 }
-/* full=false：在帖子列表里默认只展示前 2 条，下面给“查看全部”进详情页；full=true：详情页展示全部 */
+/* 评论列表（默认直接展示，不用点开）：0 条显示友好提示，不足 2 条展示有的几条；≥1 条下面有“展示全部评论”进详情页 */
+function cmtListHtml(pid, full) {
+  var rows = feedComments[pid] || [];
+  if (!rows.length) return '<div class="cmt-empty">发一条友善的评论吧</div>';
+  var shown = full ? rows : rows.slice(0, 2);
+  var html = shown.map(function (c) { return commentHtml(c, pid); }).join("");
+  if (!full) html += '<button class="cmt-more" data-postid="' + pid + '" type="button">展示全部评论</button>';
+  return html;
+}
+/* full=false：列表页默认只展示前 2 条；full=true：详情页展示全部 */
 async function loadComments(pid, full) {
   var list = document.querySelector('[data-cmtlist="' + pid + '"]');
   if (!list) return;
-  list.innerHTML = '<div class="cmt-empty">评论加载中……</div>';
   try {
     var rows = await apiGet("/rest/v1/comments?select=id,post_id,content,image_url,image_path,author_name,is_anonymous,device_id,created_at&post_id=eq." + pid + "&order=created_at.asc&limit=100");
     commentLoaded[pid] = true;
-    if (!rows || !rows.length) { list.innerHTML = '<div class="cmt-empty">还没有评论</div>'; return; }
+    feedComments[pid] = rows || [];
+    commentCount[pid] = (rows || []).length;
+    updateCmtCount(pid);
     var dids = [];
-    rows.forEach(function (c) { if (!c.is_anonymous && c.device_id && dids.indexOf(c.device_id) < 0) dids.push(c.device_id); });
+    (rows || []).forEach(function (c) { if (!c.is_anonymous && c.device_id && dids.indexOf(c.device_id) < 0) dids.push(c.device_id); });
     await fetchProfiles(dids);
-    /* 评论点赞 */
-    var cids = rows.map(function (c) { return c.id; });
-    var likes = [];
-    try { likes = await apiGet("/rest/v1/comment_likes?select=comment_id,device_id&comment_id=in.(" + cids.map(encodeURIComponent).join(",") + ")"); } catch (e) { likes = []; }
-    (likes || []).forEach(function (l) {
-      cmtLikeCount[l.comment_id] = (cmtLikeCount[l.comment_id] || 0) + 1;
-      if (l.device_id === deviceId) cmtLikedByMe[l.comment_id] = true;
-    });
-    var shown = full ? rows : rows.slice(0, 2);
-    var html = shown.map(function (c, i) { return commentHtml(c, pid); }).join("");
-    if (!full && rows.length > 2) {
-      html += '<button class="cmt-more" data-postid="' + pid + '" type="button">查看全部 ' + rows.length + ' 条评论</button>';
+    var cids = (rows || []).map(function (c) { return c.id; });
+    if (cids.length) {
+      cids.forEach(function (id) { delete cmtLikeCount[id]; delete cmtLikedByMe[id]; });
+      var likes = [];
+      try { likes = await apiGet("/rest/v1/comment_likes?select=comment_id,device_id&comment_id=in.(" + cids.map(encodeURIComponent).join(",") + ")"); } catch (e) { likes = []; }
+      (likes || []).forEach(function (l) {
+        cmtLikeCount[l.comment_id] = (cmtLikeCount[l.comment_id] || 0) + 1;
+        if (l.device_id === deviceId) cmtLikedByMe[l.comment_id] = true;
+      });
     }
-    list.innerHTML = html;
+    list.innerHTML = cmtListHtml(pid, full);
   } catch (e) {
-    list.innerHTML = '<div class="cmt-empty">评论加载失败，点一下重新打开试试</div>';
+    list.innerHTML = '<div class="cmt-empty">评论加载失败，刷新一下试试</div>';
   }
 }
 async function submitComment(pid, btn) {
