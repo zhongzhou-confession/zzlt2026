@@ -311,6 +311,16 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
 .cmt-btn:active { transform: scale(.95); }
 .cmt-btn.open { background: var(--primary); color: #fff; border-color: var(--primary); }
 .cmt-btn:disabled { opacity: .6; }
+.reacts { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+.react { display: flex; flex-direction: column; align-items: center; gap: 1px; border: 1.5px solid var(--border); background: #fff; border-radius: 12px; padding: 6px 10px 5px; cursor: pointer; min-width: 56px; transition: border-color .2s ease, background .2s ease, transform .15s ease; }
+.react:hover { border-color: var(--primary); }
+.react:active { transform: scale(.95); }
+.react:disabled { opacity: .6; cursor: not-allowed; }
+.react .re { font-size: 18px; line-height: 1.3; }
+.react .re .rc { font-size: 12px; color: var(--text-2); margin-left: 2px; }
+.react .rl { font-size: 11px; color: var(--text-2); line-height: 1.3; }
+.react.mine { border-color: var(--primary); background: var(--primary-soft); }
+.react.mine .rl, .react.mine .re .rc { color: var(--primary); font-weight: 700; }
 .cmt-box { overflow: hidden; max-height: 0; opacity: 0; transition: max-height .3s ease, opacity .25s ease; }
 .cmt-box.open { max-height: 520px; opacity: 1; overflow-y: auto; margin-top: 12px; }
 .cmt-list { background: var(--bg); border-radius: 12px; padding: 4px 12px; }
@@ -675,6 +685,12 @@ async function apiPost(path, body, extraHeaders) {
   if (!res.ok) throw new Error((j && (j.error || j.message)) || ("请求失败（" + res.status + "）"));
   return j;
 }
+async function apiDelete(path) {
+  var res = await apiFetch(path, { method: "DELETE", headers: authHeaders() });
+  var txt = await res.text();
+  if (!res.ok) throw new Error("请求失败（" + res.status + "）");
+  return txt;
+}
 
 /* ---------- small utils ---------- */
 function toast(msg) {
@@ -707,6 +723,16 @@ var adminToken = null;
 var feedPosts = [];
 var likeCount = {};
 var likedByMe = {};
+/* 表情反应：抖音式 5 个表情，1 最差 → 5 最好；碎掉的心不做，负面反馈走举报 */
+var REACTS = [
+  { v: 1, emoji: "😠", label: "非常不满意" },
+  { v: 2, emoji: "😞", label: "不满意" },
+  { v: 3, emoji: "😐", label: "一般" },
+  { v: 4, emoji: "😊", label: "满意" },
+  { v: 5, emoji: "😍", label: "非常满意" }
+];
+var reactCounts = {};
+var reactMine = {};
 
 /* ---------- 个人主页 ---------- */
 var AVATARS = ["🐱", "🐶", "🦊", "🐼", "🐰", "🐻", "⭐", "🌙", "☀️", "🌸", "🚀", "🎵"];
@@ -1136,6 +1162,14 @@ async function loadFeed(slug) {
       likeCount[l.post_id] = (likeCount[l.post_id] || 0) + 1;
       if (l.device_id === deviceId) likedByMe[l.post_id] = true;
     });
+    var reacts = [];
+    try { reacts = await apiGet("/rest/v1/post_reactions?select=post_id,device_id,reaction"); } catch (e) { reacts = []; }
+    reactCounts = {}; reactMine = {};
+    (reacts || []).forEach(function (r) {
+      if (!reactCounts[r.post_id]) reactCounts[r.post_id] = {};
+      reactCounts[r.post_id][r.reaction] = (reactCounts[r.post_id][r.reaction] || 0) + 1;
+      if (r.device_id === deviceId) reactMine[r.post_id] = r.reaction;
+    });
     var cmtRows = [];
     try { cmtRows = await apiGet("/rest/v1/comments?select=post_id&limit=1000"); } catch (e) { cmtRows = []; }
     commentCount = {};
@@ -1174,6 +1208,17 @@ function setFeedSort(mode) {
   if (typeof currentSection !== "undefined" && currentSection) renderFeed(currentSection);
 }
 
+function reactsHtml(id) {
+  return REACTS.map(function (rc) {
+    var n = (reactCounts[id] && reactCounts[id][rc.v]) || 0;
+    var mine = reactMine[id] === rc.v;
+    return '<button class="react' + (mine ? " mine" : "") + '" data-id="' + id + '" data-r="' + rc.v + '" type="button" title="' + rc.label + '"><span class="re">' + rc.emoji + '<span class="rc">' + n + '</span></span><span class="rl">' + rc.label + '</span></button>';
+  }).join("");
+}
+function refreshReacts(id) {
+  var box = document.querySelector('[data-reacts="' + id + '"]');
+  if (box) box.innerHTML = reactsHtml(id);
+}
 function postHtml(p, s, i) {
   var isAnon = !!p.is_anonymous;
   /* 匿名：只显示“匿名”，不显示头像姓名，也点不进主页；实名：显示主页头像+昵称，点头像/名字进主页 */
@@ -1197,6 +1242,7 @@ function postHtml(p, s, i) {
     '<button class="like' + (liked ? " liked" : "") + '" data-id="' + p.id + '" type="button"' + (liked ? " disabled" : "") + '>' + likeLabel + ' · ' + (likeCount[p.id] || 0) + '</button>' +
     '<button class="report" data-id="' + p.id + '" type="button">举报</button>' + edit + del +
     '</div>' +
+    '<div class="reacts" data-reacts="' + p.id + '">' + reactsHtml(p.id) + '</div>' +
     '<div class="cmt-toggle"><button class="cmt-btn" data-id="' + p.id + '" type="button">评论 · <span data-ccount="' + p.id + '">' + (commentCount[p.id] || 0) + '</span></button></div>' +
     '<div class="cmt-box" data-cmtbox="' + p.id + '">' +
     '<div class="cmt-list" data-cmtlist="' + p.id + '"></div>' +
@@ -1346,6 +1392,8 @@ document.getElementById("submitBtn").onclick = async function () {
 document.getElementById("feed").addEventListener("click", function (ev) {
   var t = ev.target;
   if (t.classList.contains("like")) { doLike(t); return; }
+  var rb = t.closest ? t.closest(".react") : null;
+  if (rb) { doReact(rb); return; }
   if (t.classList.contains("report")) {
     var box = document.querySelector('[data-report="' + t.getAttribute("data-id") + '"]');
     if (box) box.style.display = box.style.display === "none" ? "block" : "none";
@@ -1391,6 +1439,31 @@ async function doLike(btn) {
     setTimeout(function () { if (plus.parentNode) plus.parentNode.removeChild(plus); }, 850);
     if (isContest) renderRank();
   } catch (e) { toast("操作失败，请重试"); btn.disabled = false; }
+}
+
+async function doReact(btn) {
+  var id = btn.getAttribute("data-id");
+  var v = parseInt(btn.getAttribute("data-r"), 10);
+  var cur = reactMine[id];
+  btn.disabled = true;
+  try {
+    /* 先删掉本设备在这帖的旧表情；点同一个就是取消，点别的就是换一个 */
+    await apiDelete("/rest/v1/post_reactions?post_id=eq." + encodeURIComponent(id) + "&device_id=eq." + encodeURIComponent(deviceId));
+    if (cur === v) {
+      if (reactCounts[id]) reactCounts[id][v] = Math.max(0, (reactCounts[id][v] || 0) - 1);
+      delete reactMine[id];
+    } else {
+      if (cur) {
+        if (reactCounts[id]) reactCounts[id][cur] = Math.max(0, (reactCounts[id][cur] || 0) - 1);
+      }
+      await apiPost("/rest/v1/post_reactions", { post_id: id, device_id: deviceId, reaction: v });
+      if (!reactCounts[id]) reactCounts[id] = {};
+      reactCounts[id][v] = (reactCounts[id][v] || 0) + 1;
+      reactMine[id] = v;
+    }
+    refreshReacts(id);
+  } catch (e) { toast("操作失败，请重试"); }
+  btn.disabled = false;
 }
 
 async function doReport(id, reason, chip) {
