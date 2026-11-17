@@ -126,6 +126,15 @@ button { font-family: inherit; }
 .sort-group { display: flex; gap: 6px; margin-left: auto; }
 .sort-btn { border: 1px solid var(--border); background: #fff; color: var(--text-2); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 700; cursor: pointer; }
 .sort-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+/* 视图切换：列表 / 双宫格 / 三宫格 */
+.view-group { display: flex; gap: 6px; margin-left: 8px; }
+#feed.view-grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+#feed.view-grid2 .post { margin-bottom: 0; }
+#feed.view-grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start; }
+#feed.view-grid3 .post { margin-bottom: 0; }
+@media (max-width: 720px) {
+  #feed.view-grid3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 /* 搜索 */
 .search-row { display: flex; gap: 8px; margin: 0 0 14px; }
 .search-row input { flex: 1; border: 1px solid var(--border); border-radius: 8px; height: 42px; padding: 0 14px; font-size: 14px; outline: none; background: #fff; }
@@ -177,7 +186,7 @@ textarea { min-height: 88px; resize: vertical; }
 .submit:hover { background: var(--primary-dark); }
 .submit:active { transform: scale(.98); }
 .submit:disabled { background: #E4E4E7; cursor: not-allowed; }
-.toolbar { display: flex; justify-content: space-between; align-items: center; margin: 4px 0 12px; }
+.toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; row-gap: 8px; margin: 4px 0 12px; }
 .toolbar h2 { font-size: 16px; font-weight: 700; }
 .toolbar button { border: 0; background: none; color: var(--primary); font-size: 14px; font-weight: 600; cursor: pointer; padding: 8px; border-radius: 8px; min-height: 36px; }
 .toolbar button:hover { background: var(--primary-soft); }
@@ -477,6 +486,11 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
     <div class="sort-group">
       <button class="sort-btn active" id="sortNew" type="button">最新</button>
       <button class="sort-btn" id="sortHot" type="button">最热</button>
+    </div>
+    <div class="view-group">
+      <button class="sort-btn active" id="viewList" type="button">列表</button>
+      <button class="sort-btn" id="viewGrid2" type="button">双宫格</button>
+      <button class="sort-btn" id="viewGrid3" type="button">三宫格</button>
     </div>
     <button id="refreshBtn" type="button">刷新</button>
   </div>
@@ -1146,6 +1160,10 @@ document.getElementById("topRefresh").onclick = function () { if (currentSection
 /* 排序：最新 / 最热 */
 document.getElementById("sortNew").onclick = function () { setFeedSort("new"); };
 document.getElementById("sortHot").onclick = function () { setFeedSort("hot"); };
+/* 视图切换：列表 / 双宫格 / 三宫格 */
+document.getElementById("viewList").onclick = function () { setFeedView("list"); };
+document.getElementById("viewGrid2").onclick = function () { setFeedView("grid2"); };
+document.getElementById("viewGrid3").onclick = function () { setFeedView("grid3"); };
 /* 搜索 */
 document.getElementById("searchBtn").onclick = doSearch;
 document.getElementById("searchInput").addEventListener("keydown", function (e) { if (e.key === "Enter") doSearch(); });
@@ -1314,6 +1332,20 @@ function setFeedSort(mode) {
   if (h) h.classList.toggle("active", mode === "hot");
   if (typeof currentSection !== "undefined" && currentSection) renderFeed(currentSection);
 }
+/* 视图切换：list 列表（原视图）/ grid2 双宫格 / grid3 三宫格；localStorage 记住选择 */
+var feedView = "list";
+try { var _vm = localStorage.getItem("cb_view_mode"); if (_vm === "grid2" || _vm === "grid3" || _vm === "list") feedView = _vm; } catch (e) {}
+function setFeedView(mode) {
+  feedView = mode;
+  var f = document.getElementById("feed");
+  if (f) { f.classList.toggle("view-grid2", mode === "grid2"); f.classList.toggle("view-grid3", mode === "grid3"); }
+  var l = document.getElementById("viewList"), g2 = document.getElementById("viewGrid2"), g3 = document.getElementById("viewGrid3");
+  if (l) l.classList.toggle("active", mode === "list");
+  if (g2) g2.classList.toggle("active", mode === "grid2");
+  if (g3) g3.classList.toggle("active", mode === "grid3");
+  try { localStorage.setItem("cb_view_mode", mode); } catch (e) {}
+}
+setFeedView(feedView); /* 打开时恢复上次选的视图，默认列表 */
 
 function postHtml(p, s, i, full) {
   var isAnon = !!p.is_anonymous;
