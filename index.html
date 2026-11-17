@@ -1641,13 +1641,13 @@ function commentHtml(c, pid) {
     '<button class="cmt-report" data-cid="' + c.id + '" data-pid="' + pid + '" type="button">举报</button>' + del + '</div>' +
     '</div></div>';
 }
-/* 评论列表（默认直接展示，不用点开）：0 条显示友好提示，不足 2 条展示有的几条；≥1 条下面有“展示全部评论”进详情页 */
+/* 评论列表（默认直接展示，不用点开）：0 条显示友好提示，不足 2 条展示有的几条；只有超过 2 条时下面才有“展示全部评论”进详情页 */
 function cmtListHtml(pid, full) {
   var rows = feedComments[pid] || [];
   if (!rows.length) return '<div class="cmt-empty">发一条友善的评论吧</div>';
   var shown = full ? rows : rows.slice(0, 2);
   var html = shown.map(function (c) { return commentHtml(c, pid); }).join("");
-  if (!full) html += '<button class="cmt-more" data-postid="' + pid + '" type="button">展示全部评论</button>';
+  if (!full && rows.length > 2) html += '<button class="cmt-more" data-postid="' + pid + '" type="button">展示全部评论</button>';
   return html;
 }
 /* full=false：列表页默认只展示前 2 条；full=true：详情页展示全部 */
