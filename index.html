@@ -408,6 +408,21 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
   </div>
 </div>
 
+<!-- 恢复码一次性提醒：再次进入时提示保存恢复密钥，只提示一次 -->
+<div id="recoveryHint" class="overlay" style="display:none">
+  <div class="dlg">
+    <h2>保存好你的身份恢复码</h2>
+    <p style="font-size:14px;color:#6B7280;line-height:1.8;margin:4px 0 12px">微信/QQ 清缓存后会丢失“我的帖子”和主页，凭这个码可以恢复身份。请截图保存，不要告诉别人。</p>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px">
+      <code id="recoveryHintCode" style="font-size:16px;font-weight:700;letter-spacing:1px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;flex:1;text-align:center">—</code>
+      <button id="recoveryHintCopy" type="button" style="border:0;background:var(--primary);color:#fff;font-size:14px;font-weight:700;padding:12px 16px;border-radius:10px;cursor:pointer;min-height:48px">复制</button>
+    </div>
+    <div class="dlg-actions">
+      <button id="recoveryHintOk" class="primary" type="button">我知道了</button>
+    </div>
+  </div>
+</div>
+
 <!-- 反馈弹窗 -->
 <div id="feedbackDlg" class="overlay" style="display:none">
   <div class="dlg">
@@ -680,6 +695,7 @@ try {
 
 /* 身份恢复码：首次访问生成 ZZ-XXXX-XXXX，存本地并同步到服务端（仅首次写入有效） */
 var recoveryCode = null;
+var hadRecoveryCode = false; /* 本次进入前是否已有恢复码（用于判断是不是再次进入） */
 function genRecoveryCode() {
   var digits = ""; for (var i = 0; i < 4; i++) digits += Math.floor(Math.random() * 10);
   var letters = ""; var abc = "ABCDEFGHJKLMNPQRSTUVWXYZ";
@@ -687,12 +703,51 @@ function genRecoveryCode() {
   return "ZZ-" + digits + "-" + letters;
 }
 try {
+  hadRecoveryCode = !!lsGet("cb_recovery_code");
   recoveryCode = lsGet("cb_recovery_code");
   if (!recoveryCode) { recoveryCode = genRecoveryCode(); lsSet("cb_recovery_code", recoveryCode); }
   if (deviceId && recoveryCode) {
     apiPost("/rest/v1/rpc/save_recovery_code", { p_device_id: deviceId, p_code: recoveryCode }).catch(function () {});
   }
 } catch (e) { recoveryCode = null; }
+
+/* 恢复码一次性提醒：再次进入时提示保存恢复密钥，只提示一次（不管之前用没用过恢复码） */
+function maybeShowRecoveryHint() {
+  if (!hadRecoveryCode) return; /* 首次进入不提示，下次再来才提示 */
+  if (lsGet("cb_recovery_hint_shown") === "1") return; /* 只提示一次 */
+  if (!recoveryCode) return;
+  var d = document.getElementById("disclaimer");
+  if (d && d.style.display === "flex") return; /* 声明弹窗在显示时先不打扰，下次再提示 */
+  var m = document.getElementById("recoveryHint");
+  var c = document.getElementById("recoveryHintCode");
+  if (!m || !c) return;
+  c.textContent = recoveryCode;
+  m.style.display = "flex";
+}
+function dismissRecoveryHint() {
+  var m = document.getElementById("recoveryHint");
+  if (m) m.style.display = "none";
+  try { lsSet("cb_recovery_hint_shown", "1"); } catch (e) {}
+}
+document.getElementById("recoveryHintOk").onclick = dismissRecoveryHint;
+document.getElementById("recoveryHintCopy").onclick = function () {
+  var code = recoveryCode || "";
+  if (!code) { dismissRecoveryHint(); return; }
+  function done() { toast("恢复码已复制，请截图保存"); dismissRecoveryHint(); }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(done, function () {
+      var ta = document.createElement("textarea"); ta.value = code; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(ta); done();
+    });
+  } else {
+    var ta2 = document.createElement("textarea"); ta2.value = code; ta2.style.position = "fixed"; ta2.style.opacity = "0";
+    document.body.appendChild(ta2); ta2.select();
+    try { document.execCommand("copy"); } catch (e) {}
+    document.body.removeChild(ta2); done();
+  }
+};
 
 function myPosts() { try { return JSON.parse(lsGet("cb_my_posts") || "[]"); } catch (e) { return []; } }
 function addMyPost(id) { var a = myPosts(); if (a.indexOf(id) < 0) a.push(id); lsSet("cb_my_posts", JSON.stringify(a)); }
@@ -2418,6 +2473,7 @@ checkDisclaimer();
 checkAnnounce(); /* v1.5: 公告小模块，默认单行折叠+红点 */
 recordVisit(); /* v1.3: 打开就记一次访问（不阻塞页面） */
 loadMyProfile(); /* 个人主页：预加载自己的头像昵称，实名发帖时自动填 */
+maybeShowRecoveryHint(); /* 再次进入时一次性提示保存恢复码 */
 if (detectAdmin()) { showView("admin"); loadAdmin(); } else { routeFromHash(); }
 </script>
 <!-- 灯箱：点图片放大 -->
