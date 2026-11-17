@@ -548,6 +548,18 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
     <div class="profile-sig" id="profSig">这个人还没有写签名</div>
     <div class="profile-meta" id="profMeta"></div>
     <div style="margin-top:14px"><button class="btn-ghost" id="profEditBtn" type="button" style="display:none">编辑我的主页</button></div>
+    <div id="recoveryBox" style="display:none;margin-top:16px;text-align:left;border-top:1px solid var(--border);padding-top:14px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:6px">身份恢复码</div>
+      <p style="font-size:12px;color:#6B7280;line-height:1.7;margin:0 0 8px">微信/QQ 清缓存后会丢失“我的帖子”和主页，凭这个码可以恢复身份。请截图保存，不要告诉别人。</p>
+      <div style="display:flex;gap:8px;align-items:center">
+        <code id="recoveryCodeText" style="font-size:15px;font-weight:700;letter-spacing:1px;background:var(--bg);border-radius:8px;padding:8px 12px;flex:1;text-align:center">—</code>
+        <button class="btn-ghost" id="recoveryCopyBtn" type="button">复制</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <input type="text" id="recoveryInput" placeholder="输入恢复码恢复身份，如 ZZ-1234-ABCD" style="flex:1;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;outline:none;min-width:0">
+        <button class="btn-ghost" id="recoveryRestoreBtn" type="button">恢复</button>
+      </div>
+    </div>
   </section>
   <section class="card" id="profEditCard" style="display:none">
     <h2>编辑我的主页</h2>
@@ -665,6 +677,22 @@ try {
   deviceId = lsGet("cb_device_id");
   if (!deviceId) { deviceId = "d_" + Math.random().toString(36).slice(2) + Date.now().toString(36); lsSet("cb_device_id", deviceId); }
 } catch (e) { deviceId = "d_" + Math.random().toString(36).slice(2) + Date.now().toString(36); }
+
+/* 身份恢复码：首次访问生成 ZZ-XXXX-XXXX，存本地并同步到服务端（仅首次写入有效） */
+var recoveryCode = null;
+function genRecoveryCode() {
+  var digits = ""; for (var i = 0; i < 4; i++) digits += Math.floor(Math.random() * 10);
+  var letters = ""; var abc = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  for (var j = 0; j < 4; j++) letters += abc[Math.floor(Math.random() * abc.length)];
+  return "ZZ-" + digits + "-" + letters;
+}
+try {
+  recoveryCode = lsGet("cb_recovery_code");
+  if (!recoveryCode) { recoveryCode = genRecoveryCode(); lsSet("cb_recovery_code", recoveryCode); }
+  if (deviceId && recoveryCode) {
+    apiPost("/rest/v1/rpc/save_recovery_code", { p_device_id: deviceId, p_code: recoveryCode }).catch(function () {});
+  }
+} catch (e) { recoveryCode = null; }
 
 function myPosts() { try { return JSON.parse(lsGet("cb_my_posts") || "[]"); } catch (e) { return []; } }
 function addMyPost(id) { var a = myPosts(); if (a.indexOf(id) < 0) a.push(id); lsSet("cb_my_posts", JSON.stringify(a)); }
@@ -921,6 +949,15 @@ async function loadProfile(did) {
   var isMine = did === deviceId;
   document.getElementById("profEditBtn").style.display = isMine ? "" : "none";
   document.getElementById("profEditCard").style.display = "none";
+  /* 身份恢复码：只在自己的主页显示 */
+  var rb = document.getElementById("recoveryBox");
+  if (rb) {
+    rb.style.display = isMine ? "" : "none";
+    if (isMine) {
+      var ct = document.getElementById("recoveryCodeText");
+      if (ct) ct.textContent = recoveryCode || "—";
+    }
+  }
   var feed = document.getElementById("profFeed");
   feed.innerHTML = skelFeedHtml();
   try {
@@ -1388,6 +1425,41 @@ document.getElementById("mineExport").onclick = exportMyPosts;
 document.getElementById("profLink").onclick = function () { openProfile(deviceId); };
 document.getElementById("profCrumb").onclick = function (e) { if (e) e.preventDefault(); _showHome(); };
 document.getElementById("profEditBtn").onclick = function () { openProfEdit(); };
+/* 身份恢复码：复制 + 输入码恢复 */
+document.getElementById("recoveryCopyBtn").onclick = function () {
+  var code = recoveryCode || "";
+  if (!code) { toast("暂无恢复码"); return; }
+  function done() { toast("恢复码已复制，请截图保存"); }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(done, function () { fallbackCopy(code); done(); });
+  } else { fallbackCopy(code); done(); }
+  function fallbackCopy(t) {
+    var ta = document.createElement("textarea"); ta.value = t; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+};
+document.getElementById("recoveryRestoreBtn").onclick = async function () {
+  var inp = document.getElementById("recoveryInput");
+  var code = (inp.value || "").trim().toUpperCase();
+  if (!code) { toast("请先输入恢复码"); return; }
+  var btn = this; btn.disabled = true; btn.textContent = "恢复中…";
+  try {
+    var did = await apiPost("/rest/v1/rpc/restore_by_code", { p_code: code });
+    if (did && typeof did === "string" && did.indexOf("d_") === 0) {
+      lsSet("cb_device_id", did);
+      toast("身份已恢复，正在刷新");
+      setTimeout(function () { window.location.reload(); }, 800);
+    } else {
+      toast("恢复码无效，请检查后重试");
+      btn.disabled = false; btn.textContent = "恢复";
+    }
+  } catch (e) {
+    toast("恢复失败，请检查网络后重试");
+    btn.disabled = false; btn.textContent = "恢复";
+  }
+};
 document.getElementById("profEditCancel").onclick = function () { document.getElementById("profEditCard").style.display = "none"; };
 document.getElementById("profSaveBtn").onclick = function () { saveProfile(); };
 
@@ -2172,8 +2244,8 @@ async function loadAdmin() {
         '<div style="font-size:15px;line-height:1.6">' + esc(r.content || "") + '</div>' +
         (r.image_url ? imgTag(r.image_url, "width:100%;border-radius:10px;margin-top:8px;display:block") : "") +
         '<div style="font-size:13px;color:#666;margin-top:8px">作者：' + (r.is_anonymous ? "匿名" : esc(r.author_name || "实名同学")) + ' · 理由：' + esc(Array.isArray(r.reasons) ? r.reasons.join("、") : (r.reasons || "未注明")) + '</div>' +
-        '<div style="font-size:13px;color:#888;margin-top:4px">IP：<span class="ip">' + esc(r.ip || "未知") + '</span></div>' +
-        '<div style="margin-top:10px;display:flex;gap:10px"><button class="btn-danger" data-act="del" data-id="' + r.post_id + '" type="button">删除帖子</button><button class="btn-ghost" data-act="dismiss" data-id="' + r.post_id + '" type="button">忽略举报</button></div>' +
+        '<div style="font-size:13px;color:#888;margin-top:4px">设备：<span class="ip">' + esc(r.ip || "未知") + '</span></div>' +
+        '<div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn-danger" data-act="del" data-id="' + r.post_id + '" type="button">删除帖子</button><button class="btn-danger" data-act="ban" data-id="' + r.post_id + '" type="button">删帖+封禁24h</button><button class="btn-ghost" data-act="dismiss" data-id="' + r.post_id + '" type="button">忽略举报</button></div>' +
         '</div>';
     }).join("");
   } catch (e) { list.innerHTML = '<div class="empty">加载失败：口令无效或网络异常<br><button class="btn-ghost" style="margin-top:12px" onclick="loadAdmin()">↻ 重新加载</button></div>'; }
@@ -2249,6 +2321,10 @@ document.getElementById("adminList").addEventListener("click", async function (e
     if (act === "del") {
       await apiPost("/rest/v1/rpc/admin_delete_post", { p_token: adminToken, p_post_id: id });
       toast("已删除该帖子");
+    } else if (act === "ban") {
+      await apiPost("/rest/v1/rpc/admin_delete_post", { p_token: adminToken, p_post_id: id });
+      var ok = await apiPost("/rest/v1/rpc/admin_ban_device", { p_token: adminToken, p_post_id: id, p_hours: 24 });
+      if (ok) { toast("已删帖，该设备已封禁 24 小时"); } else { toast("已删帖，但封禁失败"); }
     } else {
       await apiPost("/rest/v1/rpc/admin_dismiss_reports", { p_token: adminToken, p_post_id: id });
       toast("已忽略该举报");
