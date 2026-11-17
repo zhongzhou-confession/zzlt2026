@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>中州校园论坛</title>
+<meta name="description" content="中州校园论坛：咱们学校自己的小论坛，心愿、树洞、失物、学习都在这儿。">
+<meta property="og:title" content="中州校园论坛">
+<meta property="og:description" content="咱们学校自己的小论坛，心愿、树洞、失物、学习都在这儿。">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2315803D'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle' fill='%23fff' font-family='sans-serif' font-weight='bold'%3E%E4%B8%AD%3C/text%3E%3C/svg%3E">
 <script>
 /**
  * Skipped minification because the original files appears to be already minified.
@@ -58,6 +63,8 @@ button { font-family: inherit; }
 
 /* ---- 首页副标题 ---- */
 .home-sub { font-size: 13px; color: var(--text-3); margin: 0 0 12px; }
+/* ---- 每月清库倒计时（每月 28 日起显示） ---- */
+.cleanup-bar { background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; border-radius: 10px; padding: 10px 14px; font-size: 13px; margin-bottom: 12px; }
 
 /* ---- 面包屑 ---- */
 .crumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); margin-bottom: 16px; flex-wrap: wrap; }
@@ -108,8 +115,9 @@ button { font-family: inherit; }
 /* v1.4: 公告模块 */
 .announce { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; margin-bottom: 16px; }
 .announce-head { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-.announce-head h2 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 0; flex: 1; display: flex; align-items: center; gap: 6px; }
+.announce-head h2 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 0; flex: none; display: flex; align-items: center; gap: 6px; }
 .announce-head h2 svg { width: 18px; height: 18px; color: var(--primary); flex: none; }
+.announce-summary { flex: 1; min-width: 0; font-size: 12px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .announce-dot { width: 8px; height: 8px; border-radius: 50%; background: #EF4444; flex: none; }
 .announce-toggle { font-size: 13px; color: var(--text-2); flex: none; }
 .announce-item { font-size: 14px; line-height: 1.8; color: var(--text); margin-bottom: 10px; }
@@ -122,6 +130,11 @@ button { font-family: inherit; }
 .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.88); z-index: 200; display: none; align-items: center; justify-content: center; padding: 16px; cursor: zoom-out; }
 .lightbox img { max-width: 100%; max-height: 88vh; border-radius: 10px; object-fit: contain; }
 .lightbox .lb-close { position: absolute; top: 14px; right: 16px; color: #fff; font-size: 30px; font-weight: 700; background: none; border: 0; cursor: pointer; line-height: 1; padding: 4px 8px; }
+/* 灯箱：左右切换箭头 + 加载失败提示 */
+.lightbox .lb-nav { position: absolute; top: 50%; transform: translateY(-50%); color: #fff; font-size: 34px; font-weight: 700; background: rgba(255,255,255,.18); border: 0; cursor: pointer; line-height: 1; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 1; }
+.lightbox .lb-prev { left: 12px; }
+.lightbox .lb-next { right: 12px; }
+.lightbox .lb-error { color: #fff; font-size: 15px; font-weight: 600; padding: 40px 20px; text-align: center; }
 /* 排序切换：最新 / 最热 */
 .sort-group { display: flex; gap: 6px; margin-left: auto; }
 .sort-btn { border: 1px solid var(--border); background: #fff; color: var(--text-2); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 700; cursor: pointer; }
@@ -135,6 +148,10 @@ button { font-family: inherit; }
 @media (max-width: 720px) {
   #feed.view-grid3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+/* 加载更多：帖子分页，每次多显示 20 条 */
+.load-more { display: block; width: 100%; border: 1px solid var(--border); background: #fff; color: var(--text-2); border-radius: 12px; padding: 12px; font-size: 14px; font-weight: 700; cursor: pointer; margin: 4px 0 12px; min-height: 46px; }
+.load-more:hover { border-color: var(--primary); color: var(--primary); }
+.load-more:disabled { opacity: .6; cursor: not-allowed; }
 /* 搜索 */
 .search-row { display: flex; gap: 8px; margin: 0 0 14px; }
 .search-row input { flex: 1; border: 1px solid var(--border); border-radius: 8px; height: 42px; padding: 0 14px; font-size: 14px; outline: none; background: #fff; }
@@ -186,6 +203,8 @@ textarea { min-height: 88px; resize: vertical; }
 .submit:hover { background: var(--primary-dark); }
 .submit:active { transform: scale(.98); }
 .submit:disabled { background: #E4E4E7; cursor: not-allowed; }
+/* 实名模式：名字输入框用绿色边框，和匿名模式明显区分开 */
+#authorName.real-mode { border-color: var(--primary); }
 .toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; row-gap: 8px; margin: 4px 0 12px; }
 .toolbar h2 { font-size: 16px; font-weight: 700; }
 .toolbar button { border: 0; background: none; color: var(--primary); font-size: 14px; font-weight: 600; cursor: pointer; padding: 8px; border-radius: 8px; min-height: 36px; }
@@ -413,12 +432,14 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
 </header>
 
 <!-- 首页 -->
-<main id="viewHome" class="wrap">
+<main>
+<section id="viewHome" class="wrap">
   <section class="announce" id="announceBox" style="display:none">
     <div class="announce-head" id="announceHead">
       <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>论坛公告</h2>
       <span class="announce-dot" id="announceDot" style="display:none"></span>
-      <span class="announce-toggle" id="announceToggle">收起</span>
+      <span class="announce-summary" id="announceSummary">每月 1 日自动清库 · 严禁泄露他人隐私</span>
+      <span class="announce-toggle" id="announceToggle">展开全部 6 条</span>
     </div>
     <div id="announceBody">
     <div class="announce-item"><b>公告一 · 匿名模式</b><br>在匿名模式下发帖，其他同学看不到你是谁，也看不到你的任何个人信息，可以放心发言。但匿名不等于可以乱说话：造谣、传谣、辱骂攻击、发布违法信息等行为依然会被处理。请文明发言，理性讨论。</div>
@@ -430,6 +451,7 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
     <button class="announce-ok" id="announceOk" type="button">我已阅读</button>
     </div>
   </section>
+  <div class="cleanup-bar" id="cleanupBar" style="display:none"></div>
   <div class="home-sub">咱们学校自己的小论坛，心愿、树洞、失物、学习都在这儿</div>
 
   <div class="search-row">
@@ -447,10 +469,10 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
   <div class="sec-title">最新动态</div>
   <div id="homeLatest"><div class="skel-card" style="padding:12px 14px"><div class="skel" style="width:88%;height:14px;margin-bottom:0"></div></div><div class="skel-card" style="padding:12px 14px"><div class="skel" style="width:72%;height:14px;margin-bottom:0"></div></div></div>
   </div>
-</main>
+</section>
 
 <!-- 板块页 -->
-<main id="viewSection" class="wrap" style="display:none">
+<section id="viewSection" class="wrap" style="display:none">
   <nav class="crumb" id="crumb" aria-label="面包屑"></nav>
   <section id="secHeader" class="sec-header"></section>
   <div id="rankBox"></div>
@@ -473,12 +495,13 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
     <div class="row">
       <textarea id="content" maxlength="500" placeholder="写点什么……（最多 500 字）"></textarea>
     </div>
+    <div class="hint" id="draftHint" style="display:none">已恢复上次未发送的草稿</div>
     <div class="row">
       <label class="filelabel">上传照片<input type="file" id="photo" accept="image/*"></label>
       <span id="fileName"></span>
       <span class="hint">照片会自动压缩到 500KB 以内，手机上看依然清晰</span>
     </div>
-    <button class="submit" id="submitBtn" type="button">发布</button>
+    <button class="submit" id="submitBtn" type="button">匿名发布</button>
   </div>
 
   <div class="toolbar">
@@ -494,28 +517,30 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
     </div>
     <button id="refreshBtn" type="button">刷新</button>
   </div>
-  <div id="feed"><div class="empty">正在加载帖子……</div></div>
-</main>
+  <div id="feed"><div class="skel-card"><div class="skel" style="width:42%;height:16px"></div><div class="skel" style="width:92%;height:14px"></div><div class="skel" style="width:68%;height:14px"></div><div class="skel" style="width:34%;height:26px;border-radius:999px;margin-bottom:0"></div></div><div class="skel-card"><div class="skel" style="width:42%;height:16px"></div><div class="skel" style="width:92%;height:14px"></div><div class="skel" style="width:68%;height:14px"></div><div class="skel" style="width:34%;height:26px;border-radius:999px;margin-bottom:0"></div></div><div class="skel-card"><div class="skel" style="width:42%;height:16px"></div><div class="skel" style="width:92%;height:14px"></div><div class="skel" style="width:68%;height:14px"></div><div class="skel" style="width:34%;height:26px;border-radius:999px;margin-bottom:0"></div></div></div>
+  <button class="load-more" id="loadMoreBtn" type="button" style="display:none">加载更多</button>
+</section>
 
 <!-- 帖子详情 -->
-<main id="viewPost" class="wrap" style="display:none">
+<section id="viewPost" class="wrap" style="display:none">
   <nav class="crumb"><button type="button" id="postBackBtn">返回</button></nav>
   <div id="postDetail"></div>
-</main>
+</section>
 
 <!-- 我的帖子 -->
-<main id="viewMine" class="wrap" style="display:none">
+<section id="viewMine" class="wrap" style="display:none">
   <nav class="crumb"><a href="#/" id="mineCrumb">首页</a> / <span>我的帖子</span></nav>
   <div class="toolbar">
     <h2>我的帖子</h2>
+    <button id="mineExport" type="button">导出我的帖子（.txt）</button>
     <button id="mineRefresh" type="button">刷新</button>
   </div>
   <p style="font-size:13px;color:#6B7280;line-height:1.7;margin-bottom:12px">只显示这台设备上发过的帖子（换手机或清掉浏览器数据就找不到了）。点进去可以编辑或删除。</p>
-  <div id="mineFeed"><div class="empty">正在加载……</div></div>
-</main>
+  <div id="mineFeed"><div class="skel-card"><div class="skel" style="width:42%;height:16px"></div><div class="skel" style="width:92%;height:14px"></div><div class="skel" style="width:68%;height:14px"></div><div class="skel" style="width:34%;height:26px;border-radius:999px;margin-bottom:0"></div></div><div class="skel-card"><div class="skel" style="width:42%;height:16px"></div><div class="skel" style="width:92%;height:14px"></div><div class="skel" style="width:68%;height:14px"></div><div class="skel" style="width:34%;height:26px;border-radius:999px;margin-bottom:0"></div></div></div>
+</section>
 
 <!-- 个人主页 -->
-<main id="viewProfile" class="wrap" style="display:none">
+<section id="viewProfile" class="wrap" style="display:none">
   <nav class="crumb"><a href="#/" id="profCrumb">首页</a> / <span>个人主页</span></nav>
   <section class="card profile-card" id="profileCard">
     <div class="profile-avatar" id="profAvatar">同</div>
@@ -536,11 +561,11 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
     <p style="font-size:12px;color:#9CA3AF;line-height:1.7;margin-top:12px">只在实名发帖和实名评论时显示你的头像和昵称；匿名发帖和匿名评论不会显示，也点不进主页。</p>
   </section>
   <div class="toolbar"><h2>他/她的帖子</h2></div>
-  <div id="profFeed"><div class="empty">正在加载……</div></div>
-</main>
+  <div id="profFeed"><div class="skel-card"><div class="skel" style="width:42%;height:16px"></div><div class="skel" style="width:92%;height:14px"></div><div class="skel" style="width:68%;height:14px"></div><div class="skel" style="width:34%;height:26px;border-radius:999px;margin-bottom:0"></div></div><div class="skel-card"><div class="skel" style="width:42%;height:16px"></div><div class="skel" style="width:92%;height:14px"></div><div class="skel" style="width:68%;height:14px"></div><div class="skel" style="width:34%;height:26px;border-radius:999px;margin-bottom:0"></div></div></div>
+</section>
 
 <!-- 管理页 -->
-<main id="viewAdmin" class="wrap" style="display:none">
+<section id="viewAdmin" class="wrap" style="display:none">
   <section class="card">
     <h2>访问统计</h2>
     <p style="font-size:13px;color:#6B7280;line-height:1.7">一共进来过多少人、打开过多少次，都在这里（按设备去重，一个设备只算一个人）</p>
@@ -556,12 +581,13 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
     <p style="font-size:13px;color:#6B7280;line-height:1.7">举报处理 · 仅管理员可见 · 被举报的帖子、举报理由和发帖 IP 都在这里</p>
     <div style="margin-top:12px"><button class="btn-ghost" id="adminReload" type="button">刷新举报</button></div>
   </section>
-  <div id="adminList"><div class="empty">正在加载举报……</div></div>
+  <div id="adminList"><div class="skel-card"><div class="skel" style="width:38%;height:14px"></div><div class="skel" style="width:88%;height:14px"></div><div class="skel" style="width:52%;height:14px;margin-bottom:0"></div></div><div class="skel-card"><div class="skel" style="width:38%;height:14px"></div><div class="skel" style="width:88%;height:14px"></div><div class="skel" style="width:52%;height:14px;margin-bottom:0"></div></div></div>
   <section class="card" style="margin-top:16px">
     <h2>评论举报</h2>
     <p style="font-size:13px;color:#6B7280;line-height:1.7">被举报的评论在这里处理</p>
   </section>
-  <div id="adminCmtList"><div class="empty">正在加载评论举报……</div></div>
+  <div id="adminCmtList"><div class="skel-card"><div class="skel" style="width:38%;height:14px"></div><div class="skel" style="width:88%;height:14px"></div><div class="skel" style="width:52%;height:14px;margin-bottom:0"></div></div><div class="skel-card"><div class="skel" style="width:38%;height:14px"></div><div class="skel" style="width:88%;height:14px"></div><div class="skel" style="width:52%;height:14px;margin-bottom:0"></div></div></div>
+</section>
 </main>
 
 <footer>
@@ -686,12 +712,37 @@ function imgTag(u, style) {
   var st = style ? ' style="' + style + '"' : "";
   return '<img class="post-img" src="' + esc(shown) + '" loading="lazy"' + st + ' alt="帖子图片" data-full="' + esc(u) + '" onerror="this.onerror=null;this.src=\'' + esc(u) + '\'">';
 }
-/* 灯箱：点图片放大，再点任意处关闭（事件委托，帖子图和举报里的图都能点） */
-function openLightbox(u) {
-  var lb = document.getElementById("lightbox");
+/* 灯箱：点图片放大；同一帖子的所有图片（帖子图+评论图）可以左右滑动/点箭头切换，下滑关闭，加载失败显示提示 */
+var lbImages = [];
+var lbIndex = 0;
+var lbSwiped = false;
+var lbBound = false;
+function lbShow(i) {
+  if (!lbImages.length) return;
+  lbIndex = Math.max(0, Math.min(i, lbImages.length - 1));
   var im = document.getElementById("lightboxImg");
-  if (!lb || !im) return;
-  im.src = imgUrl(u) || u;
+  var err = document.getElementById("lbError");
+  if (err) err.style.display = "none";
+  if (im) {
+    im.style.display = "";
+    im.onerror = function () { im.style.display = "none"; if (err) err.style.display = "block"; };
+    im.onload = function () { im.style.display = ""; if (err) err.style.display = "none"; };
+    im.src = imgUrl(lbImages[lbIndex]) || lbImages[lbIndex];
+  }
+  var prev = document.getElementById("lbPrev"), next = document.getElementById("lbNext");
+  var multi = lbImages.length > 1;
+  if (prev) prev.style.display = (multi && lbIndex > 0) ? "" : "none";
+  if (next) next.style.display = (multi && lbIndex < lbImages.length - 1) ? "" : "none";
+}
+function lbNav(dir) { lbShow(lbIndex + dir); }
+function openLightbox(u, imgs) {
+  var lb = document.getElementById("lightbox");
+  if (!lb) return;
+  bindLightbox();
+  lbImages = (imgs && imgs.length) ? imgs.slice() : [u];
+  lbIndex = 0;
+  for (var i = 0; i < lbImages.length; i++) { if (lbImages[i] === u) { lbIndex = i; break; } }
+  lbShow(lbIndex);
   lb.style.display = "flex";
   document.body.style.overflow = "hidden";
 }
@@ -701,10 +752,57 @@ function closeLightbox() {
   lb.style.display = "none";
   document.body.style.overflow = "";
 }
+/* 灯箱手势：点任意处关闭（箭头除外），左右滑动切换图片，下滑关闭；滑动后紧跟的点击不触发关闭 */
+function bindLightbox() {
+  if (lbBound) return;
+  var lb = document.getElementById("lightbox");
+  if (!lb) return;
+  lbBound = true;
+  lb.addEventListener("click", function (e) {
+    if (lbSwiped) { lbSwiped = false; return; }
+    if (e.target && e.target.closest && (e.target.closest("#lbPrev") || e.target.closest("#lbNext"))) return;
+    closeLightbox();
+  });
+  var prevBtn = document.getElementById("lbPrev"), nextBtn = document.getElementById("lbNext");
+  if (prevBtn) prevBtn.onclick = function (e) { if (e) e.stopPropagation(); lbNav(-1); };
+  if (nextBtn) nextBtn.onclick = function (e) { if (e) e.stopPropagation(); lbNav(1); };
+  var startX = 0, startY = 0;
+  lb.addEventListener("touchstart", function (e) {
+    if (e.touches.length !== 1) return;
+    startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+  }, { passive: true });
+  lb.addEventListener("touchend", function (e) {
+    if (!e.changedTouches.length) return;
+    var dx = e.changedTouches[0].clientX - startX;
+    var dy = e.changedTouches[0].clientY - startY;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
+      lbSwiped = true;
+      setTimeout(function () { lbSwiped = false; }, 350);
+      lbNav(dx < 0 ? 1 : -1);
+    } else if (dy > 80 && Math.abs(dy) > Math.abs(dx)) {
+      lbSwiped = true;
+      setTimeout(function () { lbSwiped = false; }, 350);
+      closeLightbox();
+    }
+  }, { passive: true });
+}
 document.addEventListener("click", function (e) {
   var t = e.target;
   if (t && t.classList && t.classList.contains("post-img")) {
-    openLightbox(t.getAttribute("data-full") || t.src);
+    /* 灯箱图集：同一帖子里的所有图片（帖子图 + 评论图），左右滑动切换 */
+    var full = t.getAttribute("data-full") || t.src;
+    var gallery = [full];
+    var postEl = t.closest ? t.closest(".post") : null;
+    if (postEl) {
+      var seen = {};
+      gallery = [];
+      postEl.querySelectorAll("img.post-img").forEach(function (im) {
+        var u2 = im.getAttribute("data-full") || im.src;
+        if (u2 && !seen[u2]) { seen[u2] = true; gallery.push(u2); }
+      });
+      if (!gallery.length) gallery = [full];
+    }
+    openLightbox(full, gallery);
     return;
   }
   /* 点实名头像/名字进主页（匿名没有 data-prof，点不到） */
@@ -783,6 +881,7 @@ async function loadMyProfile() {
     myProfile = (rows && rows[0]) || null;
     if (myProfile) profileCache[deviceId] = myProfile;
   } catch (e) { myProfile = null; }
+  updateSubmitBtn(); /* 主页昵称加载好后，实名按钮文案跟着变 */
   return myProfile;
 }
 /* 实名帖/评论用的头像和名字：有主页就用主页的，没有就用发帖时填的名字 */
@@ -823,7 +922,7 @@ async function loadProfile(did) {
   document.getElementById("profEditBtn").style.display = isMine ? "" : "none";
   document.getElementById("profEditCard").style.display = "none";
   var feed = document.getElementById("profFeed");
-  feed.innerHTML = '<div class="empty">正在加载……</div>';
+  feed.innerHTML = skelFeedHtml();
   try {
     await fetchProfiles([did]);
     var p = profileCache[did];
@@ -944,7 +1043,7 @@ async function loadMine() {
   var box = document.getElementById("mineFeed");
   var ids = myPostIds();
   if (!ids.length) { box.innerHTML = '<div class="empty">你还没有发过帖子（这台设备上发的才会出现在这里）</div>'; return; }
-  box.innerHTML = '<div class="empty">正在加载……</div>';
+  box.innerHTML = skelFeedHtml();
   try {
     var posts = await apiGet("/rest/v1/posts?select=id,section,title,content,image_url,author_name,is_anonymous,device_id,created_at&id=in.(" + ids.map(encodeURIComponent).join(",") + ")&order=created_at.desc");
     if (!posts || !posts.length) { box.innerHTML = '<div class="empty">这些帖子可能已被清理（每月 1 号会清库）</div>'; return; }
@@ -959,11 +1058,56 @@ async function loadMine() {
     box.innerHTML = '<div class="empty">加载失败，请检查网络后重试</div>';
   }
 }
+/* 导出我的帖子：下载一个 .txt，方便每月 1 号清库前保存 */
+async function exportMyPosts() {
+  var ids = myPostIds();
+  if (!ids.length) { toast("暂无可导出的帖子"); return; }
+  var btn = document.getElementById("mineExport");
+  if (btn) { btn.disabled = true; btn.textContent = "导出中…"; }
+  try {
+    var posts = await apiGet("/rest/v1/posts?select=id,section,title,content,created_at&id=in.(" + ids.map(encodeURIComponent).join(",") + ")&order=created_at.desc");
+    if (!posts || !posts.length) { toast("暂无可导出的帖子"); return; }
+    var lines = [];
+    lines.push("中州校园论坛 · 我的帖子");
+    lines.push("导出时间：" + new Date().toLocaleString());
+    lines.push("");
+    posts.forEach(function (p, i) {
+      var s = sectionBySlug(p.section) || { name: p.section };
+      lines.push("【" + (i + 1) + "】" + s.name + " · " + new Date(p.created_at).toLocaleString());
+      if (p.title) lines.push("标题：" + p.title);
+      lines.push(p.content || "");
+      lines.push("");
+    });
+    var blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "我的帖子-" + new Date().toISOString().slice(0, 10) + ".txt";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    toast("已导出 " + posts.length + " 条帖子");
+  } catch (e) { toast("导出失败，请重试"); }
+  if (btn) { btn.disabled = false; btn.textContent = "导出我的帖子（.txt）"; }
+}
 /* v1.1: hash 路由，手机返回键从板块回到首页，而不是退出 */
 function _showHome() {
   currentSection = null;
   showView("home");
+  updateCleanupBar(); /* 每月 28 日起在首页顶部显示清库倒计时 */
   loadHome();
+}
+/* 每月清库倒计时：每月 28 日到月底，在首页顶部提示距离 1 号清库还有几天 */
+function updateCleanupBar() {
+  var bar = document.getElementById("cleanupBar");
+  if (!bar) return;
+  var now = new Date();
+  if (now.getDate() < 28) { bar.style.display = "none"; return; }
+  var next = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  var days = Math.ceil((next.getTime() - now.getTime()) / 86400000);
+  bar.textContent = "距离每月 1 日例行清库还有 " + days + " 天，重要内容请及时保存";
+  bar.style.display = "block";
 }
 function _openSection(slug) {
   currentSection = slug;
@@ -979,6 +1123,7 @@ function _openSection(slug) {
   document.getElementById("titleRow").style.display = slug === "contest" ? "flex" : "none";
   document.getElementById("rankBox").innerHTML = "";
   showView("section");
+  restoreDraft(); /* 有未发送的草稿就恢复出来 */
   loadFeed(slug);
 }
 function routeFromHash() {
@@ -1006,7 +1151,7 @@ var detailPostId = null;
 async function _openPost(id) {
   detailPostId = id;
   var box = document.getElementById("postDetail");
-  box.innerHTML = '<div class="empty">正在加载帖子……</div>';
+  box.innerHTML = skelFeedHtml();
   showView("post");
   try {
     var rows = await apiGet("/rest/v1/posts?select=id,section,title,content,image_url,author_name,is_anonymous,device_id,created_at&id=eq." + id + "&limit=1");
@@ -1070,15 +1215,18 @@ document.getElementById("disclaimerCancel").onclick = function () {
   document.getElementById("disclaimer").style.display = "none";
 };
 
-/* ---------- v1.4: 公告模块（小模块 + 红点，未读时首次进入默认展开） ---------- */
+/* ---------- v1.4: 公告模块（小模块 + 红点，默认单行折叠） ---------- */
 var ANNOUNCE_VER = "1";
 function announceUnread() { return lsGet("cb_announce_read") !== ANNOUNCE_VER; }
 function setAnnounceOpen(open) {
   var body = document.getElementById("announceBody");
   var toggle = document.getElementById("announceToggle");
+  var sum = document.getElementById("announceSummary");
   if (!body) return;
   body.style.display = open ? "block" : "none";
-  if (toggle) toggle.textContent = open ? "收起" : "展开";
+  var n = document.querySelectorAll("#announceBody .announce-item").length || 6;
+  if (toggle) toggle.textContent = open ? "收起" : "展开全部 " + n + " 条";
+  if (sum) sum.style.display = open ? "none" : "";
 }
 function setAnnounceDots(show) {
   var d1 = document.getElementById("announceDot");
@@ -1091,7 +1239,7 @@ function checkAnnounce() {
   if (!box) return;
   box.style.display = "block";
   var unread = announceUnread();
-  setAnnounceOpen(unread);
+  setAnnounceOpen(false); /* 默认单行折叠，首屏留给板块和帖子，不再首次进入自动展开 */
   setAnnounceDots(unread);
 }
 document.getElementById("announceHead").onclick = function () {
@@ -1132,6 +1280,19 @@ document.getElementById("fbSubmit").onclick = async function () {
   btn.disabled = false; btn.textContent = "提交反馈";
 };
 
+/* ---------- 实名/匿名强视觉区分：按钮文案 + 名字框边框颜色 ---------- */
+function submitBtnLabel() {
+  if (isAnon) return "匿名发布";
+  var nick = (myProfile && myProfile.display_name) || document.getElementById("authorName").value.trim();
+  return nick ? "以【" + nick + "】发布" : "以实名发布";
+}
+function updateSubmitBtn() {
+  var btn = document.getElementById("submitBtn");
+  if (!btn || btn.disabled) return;
+  btn.textContent = submitBtnLabel();
+  var nameInput = document.getElementById("authorName");
+  if (nameInput) nameInput.classList.toggle("real-mode", !isAnon);
+}
 /* ---------- anonymous / real-name toggle (pure DOM: works even if backend is down) ---------- */
 var isAnon = true;
 document.getElementById("btnAnon").onclick = function () {
@@ -1139,6 +1300,7 @@ document.getElementById("btnAnon").onclick = function () {
   this.classList.add("on"); document.getElementById("btnReal").classList.remove("on");
   document.getElementById("nameRow").style.display = "none";
   document.getElementById("modeHint").textContent = "匿名发帖，不显示你的名字";
+  updateSubmitBtn();
 };
 document.getElementById("btnReal").onclick = function () {
   isAnon = false;
@@ -1148,10 +1310,49 @@ document.getElementById("btnReal").onclick = function () {
   /* 如果主页里设了昵称，自动填进去 */
   var inp = document.getElementById("authorName");
   if (myProfile && myProfile.display_name && !inp.value) inp.value = myProfile.display_name;
+  updateSubmitBtn();
 };
+/* 名字框里打字时，按钮文案跟着变（以【昵称】发布） */
+document.getElementById("authorName").addEventListener("input", updateSubmitBtn);
 document.getElementById("photo").onchange = function () {
   document.getElementById("fileName").textContent = this.files.length ? this.files[0].name : "";
 };
+/* ---------- 发帖草稿：边写边存，刷新/误触返回也不丢；发成功后清空 ---------- */
+function saveDraft() {
+  var c = document.getElementById("content").value;
+  var t = document.getElementById("postTitle").value;
+  if (!c && !t) { try { window.localStorage.removeItem("cb_draft"); } catch (e) {} return; }
+  lsSet("cb_draft", JSON.stringify({ title: t, content: c, section: currentSection, savedAt: Date.now() }));
+}
+function restoreDraft() {
+  var contentEl = document.getElementById("content");
+  var titleEl = document.getElementById("postTitle");
+  if (((contentEl.value || "").trim()) || ((titleEl.value || "").trim())) return; /* 正在写的东西别覆盖 */
+  var raw = lsGet("cb_draft");
+  if (!raw) return;
+  var d = null;
+  try { d = JSON.parse(raw); } catch (e) { return; }
+  if (!d || d.section !== currentSection) return;
+  if (d.content) contentEl.value = d.content;
+  if (d.title) titleEl.value = d.title;
+  var hint = document.getElementById("draftHint");
+  if (hint && (d.content || d.title)) hint.style.display = "block";
+}
+function clearDraft() {
+  try { window.localStorage.removeItem("cb_draft"); } catch (e) {}
+  var hint = document.getElementById("draftHint");
+  if (hint) hint.style.display = "none";
+}
+document.getElementById("content").addEventListener("input", function () {
+  var hint = document.getElementById("draftHint");
+  if (hint) hint.style.display = "none";
+  saveDraft();
+});
+document.getElementById("postTitle").addEventListener("input", function () {
+  var hint = document.getElementById("draftHint");
+  if (hint) hint.style.display = "none";
+  saveDraft();
+});
 document.getElementById("homeBtn").onclick = goHome;
 document.getElementById("footHome").onclick = goHome;
 document.getElementById("logoBtn").onclick = goHome;
@@ -1160,6 +1361,16 @@ document.getElementById("topRefresh").onclick = function () { if (currentSection
 /* 排序：最新 / 最热 */
 document.getElementById("sortNew").onclick = function () { setFeedSort("new"); };
 document.getElementById("sortHot").onclick = function () { setFeedSort("hot"); };
+/* 加载更多：先展示已拉取的，没有了再向服务端拉下一页 */
+document.getElementById("loadMoreBtn").onclick = async function () {
+  if (!currentSection) return;
+  var btn = this;
+  if (feedPosts.length > feedShown) { feedShown += FEED_PAGE; renderFeed(currentSection); return; }
+  if (!feedHasMore) return;
+  btn.disabled = true; btn.textContent = "加载中…";
+  await loadFeed(currentSection, true);
+  btn.disabled = false; btn.textContent = "加载更多";
+};
 /* 视图切换：列表 / 双宫格 / 三宫格 */
 document.getElementById("viewList").onclick = function () { setFeedView("list"); };
 document.getElementById("viewGrid2").onclick = function () { setFeedView("grid2"); };
@@ -1172,6 +1383,7 @@ document.getElementById("searchClear").onclick = clearSearch;
 document.getElementById("mineLink").onclick = function () { showMine(); };
 document.getElementById("mineCrumb").onclick = function (e) { if (e) e.preventDefault(); _showHome(); };
 document.getElementById("mineRefresh").onclick = function () { loadMine(); };
+document.getElementById("mineExport").onclick = exportMyPosts;
 /* 我的主页 */
 document.getElementById("profLink").onclick = function () { openProfile(deviceId); };
 document.getElementById("profCrumb").onclick = function (e) { if (e) e.preventDefault(); _showHome(); };
@@ -1234,7 +1446,7 @@ async function loadHome() {
         var c = grid.querySelector('[data-count="' + s.slug + '"]');
         if (c) c.textContent = "暂时无法加载";
       });
-      document.getElementById("homeLatest").innerHTML = '<div class="empty">加载失败，请检查网络后点刷新重试</div>';
+      document.getElementById("homeLatest").innerHTML = '<div class="empty">加载失败，请检查网络后重试<br><button class="btn-ghost" style="margin-top:12px" type="button" onclick="loadHome()">↻ 重新加载</button></div>';
     }
   }
 }
@@ -1245,6 +1457,14 @@ function skelFeedHtml() {
   var h = "";
   for (var i = 0; i < 3; i++) {
     h += '<div class="skel-card"><div class="skel" style="width:42%;height:16px"></div><div class="skel" style="width:92%;height:14px"></div><div class="skel" style="width:68%;height:14px"></div><div class="skel" style="width:34%;height:26px;border-radius:999px;margin-bottom:0"></div></div>';
+  }
+  return h;
+}
+/* 管理后台举报列表的骨架屏：2 行占位 */
+function skelAdminHtml() {
+  var h = "";
+  for (var i = 0; i < 2; i++) {
+    h += '<div class="skel-card"><div class="skel" style="width:38%;height:14px"></div><div class="skel" style="width:88%;height:14px"></div><div class="skel" style="width:52%;height:14px;margin-bottom:0"></div></div>';
   }
   return h;
 }
@@ -1279,20 +1499,63 @@ async function applyFeedData(d) {
   await fetchProfiles(dids);
 }
 
-async function loadFeed(slug) {
+/* ---------- 帖子分页：首屏只拉 20 条，点“加载更多”再拉下一页 ---------- */
+var FEED_PAGE = 20;
+var feedShown = FEED_PAGE;   /* 当前展示的帖子数 */
+var feedOffset = 0;          /* 最新排序下已向服务端请求的帖子数 */
+var feedHasMore = false;     /* 服务端是否还有更多（最新排序） */
+var feedAllLoaded = false;   /* 最热排序/风采自荐：已一次拉全量 */
+function postsUrl(slug, limit, offset) {
+  return "/rest/v1/posts?select=id,section,title,content,image_url,author_name,is_anonymous,device_id,created_at&section=eq." + encodeURIComponent(slug) + "&order=created_at.desc&limit=" + limit + "&offset=" + offset;
+}
+async function loadFeed(slug, append) {
   var feed = document.getElementById("feed");
-  feed.innerHTML = skelFeedHtml();
-  commentLoaded = {};
-  /* 本地有缓存就先显示出来（秒开），再后台拉最新的 */
-  var cached = cacheGet("cb_feed_" + slug);
-  var hasCache = !!(cached && cached.posts);
-  if (hasCache) {
-    await applyFeedData(cached);
-    renderFeed(slug);
-    if (slug === "contest") renderRank();
+  var moreBtn = document.getElementById("loadMoreBtn");
+  var hasCache = false;
+  if (!append) {
+    feed.innerHTML = skelFeedHtml();
+    if (moreBtn) moreBtn.style.display = "none";
+    commentLoaded = {};
+    feedShown = FEED_PAGE; feedOffset = 0; feedHasMore = false; feedAllLoaded = false;
+    /* 本地有缓存就先显示出来（秒开），再后台拉最新的 */
+    var cached = cacheGet("cb_feed_" + slug);
+    hasCache = !!(cached && cached.posts);
+    if (hasCache) {
+      await applyFeedData(cached);
+      feedOffset = feedPosts.length;
+      renderFeed(slug);
+      if (slug === "contest") renderRank();
+    }
   }
   try {
-    var posts = await apiGet("/rest/v1/posts?select=id,section,title,content,image_url,author_name,is_anonymous,device_id,created_at&section=eq." + encodeURIComponent(slug) + "&order=created_at.desc&limit=100");
+    if (append) {
+      /* 只拉下一页帖子；点赞/评论首屏已拉全量，不用重复拉 */
+      var nextPosts = await apiGet(postsUrl(slug, FEED_PAGE + 1, feedOffset));
+      feedHasMore = (nextPosts || []).length > FEED_PAGE;
+      if (feedHasMore) nextPosts = nextPosts.slice(0, FEED_PAGE);
+      feedOffset += (nextPosts || []).length;
+      feedPosts = feedPosts.concat(nextPosts || []);
+      feedShown += FEED_PAGE;
+      var dids = [];
+      (nextPosts || []).forEach(function (p) { if (!p.is_anonymous && p.device_id && dids.indexOf(p.device_id) < 0) dids.push(p.device_id); });
+      await fetchProfiles(dids);
+      renderFeed(slug);
+      if (slug === "contest") renderRank();
+      return;
+    }
+    /* 首屏：最热排序和风采自荐要一次拉全量才能正确排名；最新排序只拉 20 条（多拉 1 条判断是否还有更多） */
+    var allMode = (feedSort === "hot" || slug === "contest");
+    var posts;
+    if (allMode) {
+      posts = await apiGet(postsUrl(slug, 100, 0));
+      feedAllLoaded = true; feedHasMore = false;
+    } else {
+      posts = await apiGet(postsUrl(slug, FEED_PAGE + 1, 0));
+      feedHasMore = (posts || []).length > FEED_PAGE;
+      if (feedHasMore) posts = posts.slice(0, FEED_PAGE);
+      feedAllLoaded = false;
+    }
+    feedOffset = (posts || []).length;
     var likes = [];
     try { likes = await apiGet("/rest/v1/post_likes?select=post_id,device_id"); } catch (e) { likes = []; }
     var cmtRows = [];
@@ -1306,7 +1569,12 @@ async function loadFeed(slug) {
     renderFeed(slug);
     if (slug === "contest") renderRank();
   } catch (e) {
-    if (!hasCache) feed.innerHTML = '<div class="empty">加载失败，请检查网络后点刷新重试</div>';
+    if (append) {
+      toast("加载失败，请重试");
+      if (moreBtn) { moreBtn.disabled = false; moreBtn.textContent = "加载更多"; }
+      return;
+    }
+    if (!hasCache) feed.innerHTML = '<div class="empty-state"><h3>加载失败</h3><p>请检查网络，点下面按钮重试</p><button class="empty-cta" type="button" onclick="loadFeed(currentSection)">点击重试</button></div>';
     /* 有缓存就继续显示缓存里的内容，不报错 */
   }
 }
@@ -1315,22 +1583,27 @@ var feedSort = "new"; /* 板块内排序：new 最新 / hot 最热（按点赞�
 function renderFeed(slug) {
   var s = sectionBySlug(slug);
   var feed = document.getElementById("feed");
+  var moreBtn = document.getElementById("loadMoreBtn");
   if (!feedPosts.length) {
     feed.innerHTML = '<div class="empty-state"><div class="empty-ico">' + ICONS[s.icon] + '</div><h3>这里还是空的</h3><p>成为第一个发帖的人吧</p><button class="empty-cta" type="button" id="emptyCta">发布首帖</button></div>';
     var cta = document.getElementById("emptyCta");
     if (cta) cta.onclick = function () { document.getElementById("content").focus(); window.scrollTo(0, 0); };
+    if (moreBtn) moreBtn.style.display = "none";
     return;
   }
   var list = feedPosts.slice();
   if (feedSort === "hot") list.sort(function (a, b) { return (likeCount[b.id] || 0) - (likeCount[a.id] || 0); });
-  feed.innerHTML = list.map(function (p, i) { return postHtml(p, s, i); }).join("");
+  var shown = list.slice(0, feedShown);
+  feed.innerHTML = shown.map(function (p, i) { return postHtml(p, s, i); }).join("");
+  /* 加载更多：还有已拉取未展示的，或者服务端还有下一页，就显示按钮 */
+  if (moreBtn) moreBtn.style.display = (list.length > feedShown || feedHasMore) ? "block" : "none";
 }
 function setFeedSort(mode) {
   feedSort = mode;
   var n = document.getElementById("sortNew"), h = document.getElementById("sortHot");
   if (n) n.classList.toggle("active", mode === "new");
   if (h) h.classList.toggle("active", mode === "hot");
-  if (typeof currentSection !== "undefined" && currentSection) renderFeed(currentSection);
+  if (typeof currentSection !== "undefined" && currentSection) loadFeed(currentSection); /* 换排序回到第 1 页重拉（最热要全量排名） */
 }
 /* 视图切换：list 列表（原视图）/ grid2 双宫格 / grid3 三宫格；localStorage 记住选择 */
 var feedView = "list";
@@ -1399,7 +1672,7 @@ function renderRank() {
       var hot = (i === 0 && v > 0) ? '<span class="podium-hot">热度第一</span>' : "";
       var initial = esc((p.title || "同").slice(0, 1));
       var avHtml = p.image_url
-        ? '<div class="pod-avatar"><span>' + initial + '</span><img class="pod-avatar-img" src="' + esc(imgUrl(p.image_url)) + '" alt="选手照片" onerror="this.remove()"></div>'
+        ? '<div class="pod-avatar"><span>' + initial + '</span><img class="pod-avatar-img" src="' + esc(imgUrl(p.image_url)) + '" loading="lazy" alt="选手照片" onerror="this.remove()"></div>'
         : '<div class="pod-avatar">' + initial + '</div>';
       return '<div class="podium-col podium-' + (i + 1) + '">' +
         '<span class="pod-crown">' + crowns[i] + '</span>' +
@@ -1468,6 +1741,25 @@ async function compressImage(file) {
   return { blob: blob, name: base + ".jpg", type: "image/jpeg" };
 }
 
+/* ---------- 发帖/评论前的隐私提醒和敏感词预检（前端即时反馈，后端仍会再拦一次） ---------- */
+function containsPrivacyInfo(text) {
+  if (!text) return false;
+  if (/1[3-9]\d{9}/.test(text)) return true; /* 11 位手机号 */
+  if (/\d{17}[\dXx]/.test(text)) return true; /* 18 位身份证号 */
+  if (/(^|\D)\d{5,12}(\D|$)/.test(text)) return true; /* QQ 号（5-12 位独立数字） */
+  if (/[高初]?[一二三四五六七八九十\d]{1,2}班(?![的])[\u4e00-\u9fa5]{2,4}/.test(text)) return true; /* 某班某某（名字直接跟在班后面；“四班的同学”这种泛指不算） */
+  return false;
+}
+var FRONT_BANNED = ["傻逼", "约炮", "色情", "黄片", "加微信", "加QQ", "刷单", "兼职赚钱", "裸聊", "嫖娼"];
+function containsBannedWord(text) {
+  if (!text) return false;
+  var t = String(text).toLowerCase();
+  for (var i = 0; i < FRONT_BANNED.length; i++) {
+    if (t.indexOf(FRONT_BANNED[i].toLowerCase()) >= 0) return true;
+  }
+  return false;
+}
+
 /* ---------- submit post (via edge function: logs IP server-side) ---------- */
 document.getElementById("submitBtn").onclick = async function () {
   var btn = this;
@@ -1479,13 +1771,17 @@ document.getElementById("submitBtn").onclick = async function () {
     if (!title) { toast("请填写姓名"); return; }
   }
   if (!content) { toast("先写点内容吧"); return; }
+  if (containsPrivacyInfo(content) && !confirm("内容中可能包含手机号/身份证号等隐私信息，确认要发布吗？")) return;
+  if (containsBannedWord(content)) { toast("内容包含敏感词，请修改后再发布"); return; }
   var name = isAnon ? null : (document.getElementById("authorName").value.trim() || (myProfile && myProfile.display_name) || "实名同学");
   var file = document.getElementById("photo").files[0];
   btn.disabled = true; btn.classList.add("loading"); btn.textContent = "发布中…";
   try {
     var imageUrl = null, imagePath = null;
     if (file) {
+      btn.textContent = "图片压缩中…";
       var up0 = await compressImage(file); /* v1.2: 先压到 500KB 以内再上传 */
+      btn.textContent = "发布中…";
       var upFile = up0.blob, upName = up0.name, upType = up0.type;
       imagePath = Date.now() + "_" + Math.random().toString(36).slice(2) + "_" + upName.replace(/[^\w.\-]+/g, "_");
       var up = await apiFetch("/storage/v1/object/confession-images/" + imagePath, {
@@ -1508,10 +1804,11 @@ document.getElementById("submitBtn").onclick = async function () {
     document.getElementById("postTitle").value = "";
     document.getElementById("photo").value = "";
     document.getElementById("fileName").textContent = "";
+    clearDraft(); /* 发成功了，草稿清空 */
     toast("发布成功");
     loadFeed(currentSection);
   } catch (e) { toast(e.message || "发布失败，请重试"); }
-  btn.disabled = false; btn.classList.remove("loading"); btn.textContent = "发布";
+  btn.disabled = false; btn.classList.remove("loading"); updateSubmitBtn();
 };
 
 /* ---------- feed actions: like / report / own delete ---------- */
@@ -1683,6 +1980,8 @@ async function submitComment(pid, btn) {
   if (!input) return;
   var content = input.value.trim();
   if (!content) { toast("先写点评论吧"); return; }
+  if (containsPrivacyInfo(content) && !confirm("内容中可能包含手机号/身份证号等隐私信息，确认要发布吗？")) return;
+  if (containsBannedWord(content)) { toast("内容包含敏感词，请修改后再发布"); return; }
   var name = isAnon ? null : (document.getElementById("authorName").value.trim() || (myProfile && myProfile.display_name) || "实名同学");
   var photoInput = document.querySelector('[data-cmtphoto="' + pid + '"]');
   var file = photoInput && photoInput.files ? photoInput.files[0] : null;
@@ -1690,7 +1989,9 @@ async function submitComment(pid, btn) {
   try {
     var imageUrl = null, imagePath = null;
     if (file) {
+      btn.textContent = "图片压缩中…";
       var up0 = await compressImage(file); /* 和发帖一样，先压到 500KB 以内再上传 */
+      btn.textContent = "发送中…";
       var upFile = up0.blob, upName = up0.name, upType = up0.type;
       imagePath = Date.now() + "_" + Math.random().toString(36).slice(2) + "_" + upName.replace(/[^\w.\-]+/g, "_");
       var up = await apiFetch("/storage/v1/object/confession-images/" + imagePath, {
@@ -1857,7 +2158,7 @@ function detectAdmin() {
 
 async function loadAdmin() {
   var list = document.getElementById("adminList");
-  list.innerHTML = '<div class="empty">正在加载举报……</div>';
+  list.innerHTML = skelAdminHtml();
   loadVisitStats(); /* v1.3: 顺带刷新访问统计 */
   try {
     var rows = await apiPost("/rest/v1/rpc/admin_list_reports", { p_token: adminToken });
@@ -1883,7 +2184,7 @@ async function loadAdmin() {
 async function loadCmtReports() {
   var list = document.getElementById("adminCmtList");
   if (!list) return;
-  list.innerHTML = '<div class="empty">正在加载评论举报……</div>';
+  list.innerHTML = skelAdminHtml();
   try {
     var rows = await apiPost("/rest/v1/rpc/admin_list_comment_reports", { p_token: adminToken });
     rows = Array.isArray(rows) ? rows : (rows && rows.data) || [];
@@ -2038,12 +2339,12 @@ window.addEventListener("hashchange", function () {
 
 /* ---------- init ---------- */
 checkDisclaimer();
-checkAnnounce(); /* v1.5: 公告小模块，未读时默认展开+红点 */
+checkAnnounce(); /* v1.5: 公告小模块，默认单行折叠+红点 */
 recordVisit(); /* v1.3: 打开就记一次访问（不阻塞页面） */
 loadMyProfile(); /* 个人主页：预加载自己的头像昵称，实名发帖时自动填 */
 if (detectAdmin()) { showView("admin"); loadAdmin(); } else { routeFromHash(); }
 </script>
 <!-- 灯箱：点图片放大 -->
-<div class="lightbox" id="lightbox" onclick="closeLightbox()"><button class="lb-close" type="button" aria-label="关闭">×</button><img id="lightboxImg" src="" alt="大图"></div>
+<div class="lightbox" id="lightbox"><button class="lb-close" type="button" aria-label="关闭">×</button><button class="lb-nav lb-prev" id="lbPrev" type="button" aria-label="上一张">‹</button><button class="lb-nav lb-next" id="lbNext" type="button" aria-label="下一张">›</button><img id="lightboxImg" src="" alt="大图"><div class="lb-error" id="lbError" style="display:none">图片加载失败</div></div>
 </body>
 </html>
