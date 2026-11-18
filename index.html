@@ -52,6 +52,11 @@ body.real-name-mode {
   --primary-dark: #B91C1C;
   --primary-soft: #FEE2E2;
 }
+/* 发帖表单可折叠：默认收起省空间，点标题展开；有草稿时自动展开 */
+#formTitle { cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+#formTitle::after { content: "›"; font-size: 22px; color: var(--text-3); transition: transform .2s ease; line-height: 1; }
+#postFormCard:not(.collapsed) #formTitle::after { transform: rotate(90deg); }
+#postFormCard.collapsed #formBody { display: none; }
 html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
 body { font-family: Inter, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; line-height: 1.6; font-variant-numeric: tabular-nums; }
 button { font-family: inherit; }
@@ -499,8 +504,9 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
   <section id="secHeader" class="sec-header"></section>
   <div id="rankBox"></div>
 
-  <div class="card">
+  <div class="card collapsed" id="postFormCard">
     <h2 id="formTitle">发帖</h2>
+    <div id="formBody">
     <div class="row">
       <div class="seg">
         <button id="btnAnon" class="on" type="button">匿名</button>
@@ -524,6 +530,7 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
       <span class="hint">照片会自动压缩到 500KB 以内，手机上看依然清晰</span>
     </div>
     <button class="submit" id="submitBtn" type="button">匿名发布</button>
+    </div>
   </div>
 
   <div class="toolbar">
@@ -1416,6 +1423,15 @@ function updateSubmitBtn() {
   /* 实名模式：整页由绿变红，提醒正在用真实身份发帖 */
   document.body.classList.toggle("real-name-mode", !isAnon);
 }
+/* 发帖表单折叠：默认收起省空间，点标题展开/收起 */
+function setFormCollapsed(c) {
+  var card = document.getElementById("postFormCard");
+  if (card) card.classList.toggle("collapsed", !!c);
+}
+document.getElementById("formTitle").onclick = function () {
+  var card = document.getElementById("postFormCard");
+  if (card) setFormCollapsed(!card.classList.contains("collapsed"));
+};
 /* ---------- anonymous / real-name toggle (pure DOM: works even if backend is down) ---------- */
 var isAnon = true;
 document.getElementById("btnAnon").onclick = function () {
@@ -1459,7 +1475,7 @@ function restoreDraft() {
   if (d.content) contentEl.value = d.content;
   if (d.title) titleEl.value = d.title;
   var hint = document.getElementById("draftHint");
-  if (hint && (d.content || d.title)) hint.style.display = "block";
+  if (hint && (d.content || d.title)) { hint.style.display = "block"; setFormCollapsed(false); } /* 有草稿就自动展开表单 */
 }
 function clearDraft() {
   try { window.localStorage.removeItem("cb_draft"); } catch (e) {}
