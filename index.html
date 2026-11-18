@@ -416,6 +416,37 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
   .topbar { max-width: 960px; }
   .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
+
+/* ---- 5 个轻量功能：楼主/马甲、已解决、投票、精选、高考倒计时 ---- */
+.op-badge { display: inline-block; background: var(--primary-soft); color: var(--primary); font-size: 11px; font-weight: 700; border-radius: 999px; padding: 1px 7px; margin-left: 4px; vertical-align: 1px; }
+.post-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+.post-badges:empty { display: none; }
+.post-badge { display: inline-block; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 2px 9px; }
+.badge-resolved { background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0; }
+.badge-featured { background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; }
+.resolve-btn, .feature-btn { border: 1.5px solid var(--border); background: #fff; color: var(--text-2); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 600; cursor: pointer; min-height: 32px; transition: background .2s ease, transform .15s ease; }
+.resolve-btn:hover, .feature-btn:hover { background: var(--bg); }
+.resolve-btn:active, .feature-btn:active { transform: scale(.95); }
+.resolve-btn:disabled, .feature-btn:disabled { opacity: .6; cursor: not-allowed; }
+.poll-box { margin-top: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px; }
+.poll-title { font-size: 12px; color: var(--text-3); font-weight: 700; margin-bottom: 8px; }
+.poll-opt { display: block; width: 100%; text-align: left; border: 1.5px solid var(--border); background: #fff; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; font-size: 14px; font-family: inherit; }
+.poll-opt:last-child { margin-bottom: 0; }
+.poll-opt:hover { border-color: var(--primary); }
+.poll-opt.voted { border-color: var(--primary); background: var(--primary-soft); }
+.poll-opt:disabled { opacity: .6; cursor: not-allowed; }
+.poll-opt-txt { display: block; font-weight: 600; word-break: break-word; }
+.poll-voted-tag { color: var(--primary); font-size: 12px; }
+.poll-opt-count { display: block; font-size: 12px; color: var(--text-3); margin-top: 2px; }
+.poll-bar { display: block; height: 6px; border-radius: 99px; background: var(--bg); margin-top: 6px; overflow: hidden; }
+.poll-bar i { display: block; height: 100%; background: var(--primary); border-radius: 99px; }
+.gaokao-count { font-size: 12px; color: var(--text-3); text-align: center; padding: 0 0 10px; }
+.poll-input-row { display: flex; gap: 8px; align-items: center; }
+.poll-input-row + .poll-input-row { margin-top: 8px; }
+.poll-input { flex: 1; min-width: 0; border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 12px; font-size: 14px; outline: none; font-family: inherit; }
+.poll-input:focus { border-color: var(--primary); }
+.poll-x { flex: none; width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--border); background: #fff; color: var(--text-2); font-size: 16px; cursor: pointer; }
+.poll-x:hover { border-color: var(--danger); color: var(--danger); }
 </style>
 </head>
 <body>
@@ -491,6 +522,7 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
     </div>
   </section>
   <div class="cleanup-bar" id="cleanupBar" style="display:none"></div>
+  <div class="gaokao-count" id="gaokaoCount"></div>
   <div class="home-sub">咱们学校自己的小论坛，心愿、树洞、失物、学习都在这儿</div>
 
   <div class="search-row">
@@ -574,6 +606,14 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
     </div>
     <div id="videoPreview" class="media-preview"></div>
     <div class="hint" id="videoProgress" style="display:none"></div>
+    <div class="row" id="pollBlock">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <button class="btn-ghost" id="pollToggleBtn" type="button">＋ 添加投票</button>
+        <span class="hint">投票是可选的，不想加就不加</span>
+      </div>
+      <div id="pollInputs" style="display:none;margin-top:10px"></div>
+      <button class="btn-ghost" id="pollAddBtn" type="button" style="display:none;margin-top:8px">＋ 添加选项</button>
+    </div>
     <button class="submit" id="submitBtn" type="button">匿名发布</button>
   </div>
 </section>
@@ -1086,7 +1126,7 @@ async function loadProfile(did) {
     document.getElementById("profSig").textContent = sig;
     document.getElementById("profMeta").textContent = isMine ? "这是你的主页" : "";
     /* 只显示实名帖子，匿名帖子不关联到主页 */
-    var posts = await apiGet("/rest/v1/posts?select=id,section,title,content,image_url,image_urls,image_paths,video_url,video_path,author_name,is_anonymous,device_id,created_at&device_id=eq." + encodeURIComponent(did) + "&is_anonymous=eq.false&order=created_at.desc&limit=50");
+    var posts = await apiGet("/rest/v1/posts?select=id,section,title,content,image_url,image_urls,image_paths,video_url,video_path,author_name,is_anonymous,device_id,resolved,is_featured,created_at&device_id=eq." + encodeURIComponent(did) + "&is_anonymous=eq.false&order=created_at.desc&limit=50");
     if (!posts || !posts.length) { feed.innerHTML = '<div class="empty">还没有实名发过帖子</div>'; return; }
     feed.innerHTML = posts.map(function (po, i) {
       var s = sectionBySlug(po.section) || { name: "论坛", slug: po.section };
@@ -1169,7 +1209,7 @@ async function doSearch() {
   res.innerHTML = '<div class="empty">正在搜索……</div>';
   try {
     var kw = encodeURIComponent("%" + q.replace(/%/g, "\\%").replace(/_/g, "\\_") + "%");
-    var posts = await apiGet("/rest/v1/posts?select=id,section,title,content,image_url,image_urls,image_paths,video_url,video_path,author_name,is_anonymous,device_id,created_at&or=(content.ilike." + kw + ",title.ilike." + kw + ")&order=created_at.desc&limit=50");
+    var posts = await apiGet("/rest/v1/posts?select=id,section,title,content,image_url,image_urls,image_paths,video_url,video_path,author_name,is_anonymous,device_id,resolved,is_featured,created_at&or=(content.ilike." + kw + ",title.ilike." + kw + ")&order=created_at.desc&limit=50");
     if (!posts || !posts.length) { res.innerHTML = '<div class="empty">没有找到包含“' + esc(q) + '”的帖子，换个词试试</div>'; return; }
     var dids = [];
     posts.forEach(function (p) { if (!p.is_anonymous && p.device_id && dids.indexOf(p.device_id) < 0) dids.push(p.device_id); });
@@ -1198,7 +1238,7 @@ async function loadMine() {
   if (!ids.length) { box.innerHTML = '<div class="empty">你还没有发过帖子（这台设备上发的才会出现在这里）</div>'; return; }
   box.innerHTML = skelFeedHtml();
   try {
-    var posts = await apiGet("/rest/v1/posts?select=id,section,title,content,image_url,image_urls,image_paths,video_url,video_path,author_name,is_anonymous,device_id,created_at&id=in.(" + ids.map(encodeURIComponent).join(",") + ")&order=created_at.desc");
+    var posts = await apiGet("/rest/v1/posts?select=id,section,title,content,image_url,image_urls,image_paths,video_url,video_path,author_name,is_anonymous,device_id,resolved,is_featured,created_at&id=in.(" + ids.map(encodeURIComponent).join(",") + ")&order=created_at.desc");
     if (!posts || !posts.length) { box.innerHTML = '<div class="empty">这些帖子可能已被清理（每月 1 号会清库）</div>'; return; }
     var dids = [];
     posts.forEach(function (p) { if (!p.is_anonymous && p.device_id && dids.indexOf(p.device_id) < 0) dids.push(p.device_id); });
@@ -1249,7 +1289,18 @@ function _showHome() {
   currentSection = null;
   showView("home");
   updateCleanupBar(); /* 每月 28 日起在首页顶部显示清库倒计时 */
+  updateGaokaoCount(); /* 首页公告下方：高考倒计时 */
   loadHome();
+}
+/* 高考倒计时：首页公告下方一行小字，算到 2027 年高考第一天（6 月 7 日） */
+function updateGaokaoCount() {
+  var el = document.getElementById("gaokaoCount");
+  if (!el) return;
+  var target = new Date(2027, 5, 7);
+  var now = new Date();
+  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var days = Math.ceil((target.getTime() - today.getTime()) / 86400000);
+  el.textContent = days > 0 ? "距离 2027 年高考还有 " + days + " 天" : (days === 0 ? "今天就是 2027 年高考，加油！" : "2027 年高考已结束");
 }
 /* 每月清库倒计时：每月 28 日到月底，在首页顶部提示距离 1 号清库还有几天 */
 function updateCleanupBar() {
@@ -1308,7 +1359,7 @@ function openCompose(slug) {
 function _openCompose(slug) {
   var s = sectionBySlug(slug);
   if (!s) { _showHome(); return; }
-  if (composeSection !== slug) resetComposeMedia(); /* 换板块发帖时清空上次选的图/视频 */
+  if (composeSection !== slug) { resetComposeMedia(); resetPollCompose(); } /* 换板块发帖时清空上次选的图/视频/投票 */
   composeSection = slug;
   currentSection = slug;
   document.getElementById("formTitle").textContent = s.formTitle;
@@ -1332,15 +1383,17 @@ document.getElementById("fabPost").onclick = function () {
 
 /* ---------- 帖子详情页：点开帖子单独进入，往下滑是全部评论 ---------- */
 var detailPostId = null;
+var detailPost = null;
 async function _openPost(id) {
   detailPostId = id;
   var box = document.getElementById("postDetail");
   box.innerHTML = skelFeedHtml();
   showView("post");
   try {
-    var rows = await apiGet("/rest/v1/posts?select=id,section,title,content,image_url,image_urls,image_paths,video_url,video_path,author_name,is_anonymous,device_id,created_at&id=eq." + id + "&limit=1");
+    var rows = await apiGet("/rest/v1/posts?select=id,section,title,content,image_url,image_urls,image_paths,video_url,video_path,author_name,is_anonymous,device_id,resolved,is_featured,created_at&id=eq." + id + "&limit=1");
     var p = rows && rows[0];
     if (!p) { box.innerHTML = '<div class="empty">帖子不存在或已被删除</div>'; return; }
+    detailPost = p;
     var s = sectionBySlug(p.section) || { name: "", icon: "heart" };
     /* 点赞数和评论数 */
     var likes = [];
@@ -1365,6 +1418,13 @@ async function _openPost(id) {
       cmtLikeCount[l.comment_id] = (cmtLikeCount[l.comment_id] || 0) + 1;
       if (l.device_id === deviceId) cmtLikedByMe[l.comment_id] = true;
     });
+    var pollOpts = [];
+    try { pollOpts = await apiGet("/rest/v1/poll_options?select=id,post_id,option_text,sort_order&post_id=eq." + id + "&order=sort_order.asc"); } catch (e) { pollOpts = []; }
+    var pollVotes = [];
+    try { pollVotes = await apiGet("/rest/v1/poll_votes?select=post_id,option_id,device_id&post_id=eq." + id + "&limit=1000"); } catch (e) { pollVotes = []; }
+    pollOptionsByPost = {}; pollVotesByPost = {};
+    pollOptionsByPost[id] = pollOpts || [];
+    pollVotesByPost[id] = pollVotes || [];
     var dids = [];
     if (!p.is_anonymous && p.device_id) dids.push(p.device_id);
     (cmtRows || []).forEach(function (c) { if (!c.is_anonymous && c.device_id && dids.indexOf(c.device_id) < 0) dids.push(c.device_id); });
@@ -1870,6 +1930,8 @@ async function applyFeedData(d) {
   var likes = d.likes || [];
   var cmtRows = d.cmtRows || [];
   var cmtLikes = d.cmtLikes || [];
+  var pollOpts = d.pollOpts || [];
+  var pollVts = d.pollVotes || [];
   likeCount = {}; likedByMe = {};
   (likes || []).forEach(function (l) {
     likeCount[l.post_id] = (likeCount[l.post_id] || 0) + 1;
@@ -1886,6 +1948,15 @@ async function applyFeedData(d) {
     cmtLikeCount[l.comment_id] = (cmtLikeCount[l.comment_id] || 0) + 1;
     if (l.device_id === deviceId) cmtLikedByMe[l.comment_id] = true;
   });
+  pollOptionsByPost = {}; pollVotesByPost = {};
+  (pollOpts || []).forEach(function (o) {
+    if (!pollOptionsByPost[o.post_id]) pollOptionsByPost[o.post_id] = [];
+    pollOptionsByPost[o.post_id].push(o);
+  });
+  (pollVts || []).forEach(function (v) {
+    if (!pollVotesByPost[v.post_id]) pollVotesByPost[v.post_id] = [];
+    pollVotesByPost[v.post_id].push(v);
+  });
   feedPosts = posts;
   /* 实名帖和实名评论先批量拿作者主页（头像+昵称），匿名帖不拿 */
   var dids = [];
@@ -1901,7 +1972,7 @@ var feedOffset = 0;          /* 最新排序下已向服务端请求的帖子数
 var feedHasMore = false;     /* 服务端是否还有更多（最新排序） */
 var feedAllLoaded = false;   /* 最热排序/风采自荐：已一次拉全量 */
 function postsUrl(slug, limit, offset) {
-  return "/rest/v1/posts?select=id,section,title,content,image_url,image_urls,image_paths,video_url,video_path,author_name,is_anonymous,device_id,created_at&section=eq." + encodeURIComponent(slug) + "&order=created_at.desc&limit=" + limit + "&offset=" + offset;
+  return "/rest/v1/posts?select=id,section,title,content,image_url,image_urls,image_paths,video_url,video_path,author_name,is_anonymous,device_id,resolved,is_featured,created_at&section=eq." + encodeURIComponent(slug) + "&order=created_at.desc&limit=" + limit + "&offset=" + offset;
 }
 async function loadFeed(slug, append) {
   var feed = document.getElementById("feed");
@@ -1957,7 +2028,11 @@ async function loadFeed(slug, append) {
     try { cmtRows = await apiGet("/rest/v1/comments?select=id,post_id,content,image_url,author_name,is_anonymous,device_id,created_at&order=created_at.asc&limit=1000"); } catch (e) { cmtRows = []; }
     var cmtLikes = [];
     try { cmtLikes = await apiGet("/rest/v1/comment_likes?select=comment_id,device_id&limit=2000"); } catch (e) { cmtLikes = []; }
-    var fresh = { posts: posts || [], likes: likes, cmtRows: cmtRows, cmtLikes: cmtLikes };
+    var pollOpts = [];
+    try { pollOpts = await apiGet("/rest/v1/poll_options?select=id,post_id,option_text,sort_order&order=sort_order.asc&limit=2000"); } catch (e) { pollOpts = []; }
+    var pollVotes = [];
+    try { pollVotes = await apiGet("/rest/v1/poll_votes?select=post_id,option_id,device_id&limit=2000"); } catch (e) { pollVotes = []; }
+    var fresh = { posts: posts || [], likes: likes, cmtRows: cmtRows, cmtLikes: cmtLikes, pollOpts: pollOpts, pollVotes: pollVotes };
     await applyFeedData(fresh);
     /* 存到本地，下次打开直接显示 */
     cacheSet("cb_feed_" + slug, fresh);
@@ -2029,6 +2104,56 @@ function postMediaHtml(p) {
   }
   return html;
 }
+function postBadgesHtml(p, s) {
+  var h = "";
+  if (p.is_featured) h += '<span class="post-badge badge-featured">精选</span>';
+  if (p.resolved) h += '<span class="post-badge badge-resolved">' + (s.slug === "lostfound" ? "已找到" : "已解决") + '</span>';
+  return h;
+}
+function findPost(pid) {
+  for (var i = 0; i < feedPosts.length; i++) if (feedPosts[i].id === pid) return feedPosts[i];
+  if (detailPost && detailPost.id === pid) return detailPost;
+  return null;
+}
+/* 投票后 / 标记已解决 / 设精选后，只刷新该帖的徽章和按钮文案，不重绘整条帖子（评论输入框里的字不会丢） */
+function refreshPostChrome(pid) {
+  var p = findPost(pid);
+  if (!p) return;
+  var s = sectionBySlug(p.section) || { slug: p.section };
+  var els = document.querySelectorAll('[data-post="' + pid + '"]');
+  for (var k = 0; k < els.length; k++) {
+    var el = els[k];
+    var b = el.querySelector('[data-badges="' + pid + '"]');
+    if (b) b.innerHTML = postBadgesHtml(p, s);
+    var rb = el.querySelector('.resolve-btn[data-id="' + pid + '"]');
+    if (rb) {
+      var res = !!p.resolved;
+      rb.setAttribute("data-resolved", res ? "1" : "0");
+      rb.textContent = res ? (s.slug === "lostfound" ? "取消已找到" : "取消已解决") : (s.slug === "lostfound" ? "标为已找到" : "标为已解决");
+    }
+    var fb = el.querySelector('.feature-btn[data-id="' + pid + '"]');
+    if (fb) fb.textContent = p.is_featured ? "取消精选" : "设为精选";
+  }
+}
+function pollBoxHtml(pid) {
+  var opts = pollOptionsByPost[pid] || [];
+  if (!opts.length) return "";
+  var votes = pollVotesByPost[pid] || [];
+  var total = votes.length;
+  var myVote = null;
+  votes.forEach(function (v) { if (v.device_id === deviceId) myVote = v.option_id; });
+  var rows = opts.map(function (o) {
+    var c = 0;
+    votes.forEach(function (v) { if (v.option_id === o.id) c++; });
+    var pct = total > 0 ? Math.round(c / total * 100) : 0;
+    var voted = myVote === o.id;
+    return '<button class="poll-opt' + (voted ? " voted" : "") + '" data-poll-vote="' + pid + '" data-opt="' + o.id + '" type="button">' +
+      '<span class="poll-opt-txt">' + esc(o.option_text) + (voted ? ' <span class="poll-voted-tag">已投</span>' : "") + '</span>' +
+      '<span class="poll-opt-count">' + c + ' 票 · ' + pct + '%</span>' +
+      '<span class="poll-bar"><i style="width:' + pct + '%"></i></span></button>';
+  }).join("");
+  return '<div class="poll-box" data-pollbox="' + pid + '"><div class="poll-title">投票 · 共 ' + total + ' 票，点击选项即可投票</div>' + rows + '</div>';
+}
 function postHtml(p, s, i, full) {
   var isAnon = !!p.is_anonymous;
   /* 匿名：只显示“匿名”，不显示头像姓名，也点不进主页；实名：显示主页头像+昵称，点头像/名字进主页 */
@@ -2038,23 +2163,33 @@ function postHtml(p, s, i, full) {
   var whoAttr = isAnon ? "" : ' data-prof="' + esc(p.device_id || "") + '"';
   var title = p.title ? '<div class="post-title">' + esc(p.title) + '</div>' : "";
   var img = postMediaHtml(p);
+  var poll = pollBoxHtml(p.id);
   var liked = likedByMe[p.id];
   var isContest = s.slug === "contest";
   var likeLabel = isContest ? (liked ? "已投票" : "投票") : (liked ? "已点赞" : "点赞");
   var del = isMyPost(p.id) ? '<button class="del" data-id="' + p.id + '" type="button">删除</button>' : "";
   var edit = isMyPost(p.id) ? '<button class="edit" data-id="' + p.id + '" type="button">编辑</button>' : "";
   var share = full ? '<button class="share" data-id="' + p.id + '" type="button">分享</button>' : ""; /* 详情页才有：一键复制分享 */
+  var resolveBtn = "";
+  if (p.device_id === deviceId && (s.slug === "lostfound" || s.slug === "study")) {
+    resolveBtn = '<button class="resolve-btn" data-id="' + p.id + '" data-section="' + s.slug + '" data-resolved="' + (p.resolved ? "1" : "0") + '" type="button">' + (p.resolved ? (s.slug === "lostfound" ? "取消已找到" : "取消已解决") : (s.slug === "lostfound" ? "标为已找到" : "标为已解决")) + '</button>';
+  }
+  var featureBtn = "";
+  if (adminToken) {
+    featureBtn = '<button class="feature-btn" data-id="' + p.id + '" type="button">' + (p.is_featured ? "取消精选" : "设为精选") + '</button>';
+  }
   return '<div class="post" data-post="' + p.id + '" style="animation-delay:' + (Math.min(i || 0, 8) * 60) + 'ms">' +
     '<div class="meta"><span class="avatar"' + whoAttr + '>' + av + '</span>' +
     '<span class="' + whoCls + '"' + whoAttr + '>' + who + '</span>' +
     '<span class="time">' + timeAgo(p.created_at) + '</span></div>' +
-    title + '<div class="text" data-posttext="' + p.id + '">' + esc(p.content) + '</div>' + img +
+    '<div class="post-badges" data-badges="' + p.id + '">' + postBadgesHtml(p, s) + '</div>' +
+    title + '<div class="text" data-posttext="' + p.id + '">' + esc(p.content) + '</div>' + img + poll +
     '<div class="actions">' +
     '<button class="like' + (liked ? " liked" : "") + '" data-id="' + p.id + '" type="button"' + (liked ? " disabled" : "") + '>' + likeLabel + ' · ' + (likeCount[p.id] || 0) + '</button>' +
-    '<button class="report" data-id="' + p.id + '" type="button">举报</button>' + share + edit + del +
+    '<button class="report" data-id="' + p.id + '" type="button">举报</button>' + share + edit + del + resolveBtn + featureBtn +
     '</div>' +
     '<div class="cmt-box open" data-cmtbox="' + p.id + '">' +
-    '<div class="cmt-list" data-cmtlist="' + p.id + '">' + cmtListHtml(p.id, full) + '</div>' +
+    '<div class="cmt-list" data-cmtlist="' + p.id + '">' + cmtListHtml(p.id, full, p.device_id) + '</div>' +
     '<div class="cmt-input-row"><label class="cmt-photo-btn" title="上传照片">＋<input type="file" class="cmt-photo" data-cmtphoto="' + p.id + '" accept="image/*" style="display:none"></label><input type="text" class="cmt-input" data-cmtinput="' + p.id + '" maxlength="300" placeholder="写评论……"><button class="cmt-send" data-id="' + p.id + '" type="button">发送</button></div>' +
     '</div>' +
     '<div class="report-box" data-report="' + p.id + '" style="display:none"><div style="font-size:13px;color:#999;margin-bottom:6px">请选择举报理由：</div>' +
@@ -2170,6 +2305,53 @@ function containsBannedWord(text) {
   return false;
 }
 
+/* ---------- 轻量投票（发帖页可选）：默认关闭，想加才加，最多 4 个选项 ---------- */
+var pollOn = false;
+var pollOptions = ["", ""];
+function renderPollInputs() {
+  var box = document.getElementById("pollInputs");
+  if (!box) return;
+  box.innerHTML = pollOptions.map(function (v, i) {
+    return '<div class="poll-input-row"><input type="text" class="poll-input" data-poll-idx="' + i + '" maxlength="20" placeholder="选项 ' + (i + 1) + '（最多 20 字）" value="' + esc(v) + '">' +
+      (pollOptions.length > 2 ? '<button type="button" class="poll-x" data-poll-x="' + i + '">×</button>' : "") + '</div>';
+  }).join("");
+  var addBtn = document.getElementById("pollAddBtn");
+  if (addBtn) addBtn.style.display = (pollOn && pollOptions.length < 4) ? "" : "none";
+}
+function resetPollCompose() {
+  pollOn = false;
+  pollOptions = ["", ""];
+  var t = document.getElementById("pollToggleBtn");
+  if (t) t.textContent = "＋ 添加投票";
+  var pi = document.getElementById("pollInputs");
+  if (pi) { pi.style.display = "none"; pi.innerHTML = ""; }
+  var pa = document.getElementById("pollAddBtn");
+  if (pa) pa.style.display = "none";
+}
+document.getElementById("pollToggleBtn").onclick = function () {
+  pollOn = !pollOn;
+  this.textContent = pollOn ? "－ 取消投票" : "＋ 添加投票";
+  document.getElementById("pollInputs").style.display = pollOn ? "block" : "none";
+  if (pollOn) renderPollInputs();
+  else { var pa = document.getElementById("pollAddBtn"); if (pa) pa.style.display = "none"; }
+};
+document.getElementById("pollAddBtn").onclick = function () {
+  if (pollOptions.length >= 4) { toast("最多 4 个选项"); return; }
+  pollOptions.push("");
+  renderPollInputs();
+};
+document.getElementById("pollInputs").addEventListener("input", function (e) {
+  var inp = e.target.closest ? e.target.closest(".poll-input") : null;
+  if (!inp) return;
+  pollOptions[parseInt(inp.getAttribute("data-poll-idx"), 10)] = inp.value;
+});
+document.getElementById("pollInputs").addEventListener("click", function (e) {
+  var b = e.target.closest ? e.target.closest("[data-poll-x]") : null;
+  if (!b) return;
+  pollOptions.splice(parseInt(b.getAttribute("data-poll-x"), 10), 1);
+  renderPollInputs();
+});
+
 /* ---------- submit post (via edge function: logs IP server-side) ---------- */
 document.getElementById("submitBtn").onclick = async function () {
   var btn = this;
@@ -2184,6 +2366,13 @@ document.getElementById("submitBtn").onclick = async function () {
   if (!content) { toast("先写点内容吧"); return; }
   if (containsPrivacyInfo(content) && !confirm("内容中可能包含手机号/身份证号等隐私信息，确认要发布吗？")) return;
   if (containsBannedWord(content)) { toast("内容包含敏感词，请修改后再发布"); return; }
+  var pollOpts = null;
+  if (pollOn) {
+    var filled = pollOptions.map(function (s) { return (s || "").trim(); }).filter(function (s) { return s; });
+    if (filled.length < 2) { toast("投票至少要填 2 个选项"); return; }
+    if (containsBannedWord(filled.join(" "))) { toast("投票选项包含敏感词，请修改后再发布"); return; }
+    pollOpts = filled;
+  }
   var name = isAnon ? null : (document.getElementById("authorName").value.trim() || (myProfile && myProfile.display_name) || "实名同学");
   btn.disabled = true; btn.classList.add("loading"); btn.textContent = "发布中…";
   try {
@@ -2216,7 +2405,8 @@ document.getElementById("submitBtn").onclick = async function () {
       image_url: imageUrls[0] || null, image_path: imagePaths[0] || null,
       image_urls: imageUrls.length ? imageUrls : null, image_paths: imagePaths.length ? imagePaths : null,
       video_url: videoUrl, video_path: videoPath,
-      author_name: name, is_anonymous: isAnon, device_id: deviceId
+      author_name: name, is_anonymous: isAnon, device_id: deviceId,
+      poll_options: pollOpts
     });
     if (!r || r.error) throw new Error((r && r.error) || "发布失败");
     if (!r.id) throw new Error("发布失败，请重试");
@@ -2224,6 +2414,7 @@ document.getElementById("submitBtn").onclick = async function () {
     document.getElementById("content").value = "";
     document.getElementById("postTitle").value = "";
     resetComposeMedia(); /* 发成功了，选的图/视频清空 */
+    resetPollCompose(); /* 发成功了，投票选项清空 */
     clearDraft(); /* 发成功了，草稿清空 */
     toast("发布成功");
     maybeShowRecoveryHint(); /* 首次发帖成功后提醒保存恢复码 */
@@ -2276,6 +2467,9 @@ function postCardClick(ev) {
     return;
   }
   if (t.classList.contains("del")) { doDelete(t); return; }
+  if (t.classList.contains("resolve-btn")) { doResolve(t); return; }
+  if (t.classList.contains("feature-btn")) { doFeature(t); return; }
+  if (t.classList.contains("poll-opt")) { doPollVote(t); return; }
   if (t.classList.contains("cmt-send")) { submitComment(t.getAttribute("data-id"), t); return; }
   if (t.classList.contains("del-cmt")) { deleteComment(t.getAttribute("data-cid"), t.getAttribute("data-pid"), t); return; }
   if (t.classList.contains("cmt-like")) { doCmtLike(t); return; }
@@ -2371,12 +2565,58 @@ async function doDelete(btn) {
   } catch (e) { toast("删除失败，请重试"); btn.disabled = false; }
 }
 
+/* ---------- 轻量功能：标为已解决 / 设精选 / 投票 ---------- */
+async function doResolve(btn) {
+  var id = btn.getAttribute("data-id");
+  var section = btn.getAttribute("data-section");
+  var target = btn.getAttribute("data-resolved") !== "1";
+  btn.disabled = true;
+  try {
+    var ok = await apiPost("/rest/v1/rpc/mark_post_resolved", { p_post_id: id, p_device_id: deviceId, p_resolved: target });
+    if (!ok) throw new Error("操作失败");
+    var p = findPost(id);
+    if (p) p.resolved = target;
+    refreshPostChrome(id);
+    toast(target ? (section === "lostfound" ? "已标为已找到" : "已标为已解决") : "已取消标记");
+  } catch (e) { toast("操作失败，请重试"); btn.disabled = false; }
+}
+async function doFeature(btn) {
+  var id = btn.getAttribute("data-id");
+  var p = findPost(id);
+  var target = !(p && p.is_featured);
+  btn.disabled = true;
+  try {
+    var ok = await apiPost("/rest/v1/rpc/admin_set_featured", { p_token: adminToken, p_post_id: id, p_featured: target });
+    if (ok === false) { toast(target ? "精选最多留 5 条" : "操作失败，请重试"); btn.disabled = false; return; }
+    if (p) p.is_featured = target;
+    refreshPostChrome(id);
+    toast(target ? "已设为精选" : "已取消精选");
+  } catch (e) { toast("操作失败，请重试"); btn.disabled = false; }
+}
+async function doPollVote(btn) {
+  var pid = btn.getAttribute("data-poll-vote");
+  var oid = btn.getAttribute("data-opt");
+  btn.disabled = true;
+  try {
+    var ok = await apiPost("/rest/v1/rpc/vote_poll", { p_post_id: pid, p_option_id: oid, p_device_id: deviceId });
+    if (!ok) throw new Error("投票失败");
+    var votes = pollVotesByPost[pid] || [];
+    pollVotesByPost[pid] = votes.filter(function (v) { return v.device_id !== deviceId; });
+    pollVotesByPost[pid].push({ post_id: pid, option_id: oid, device_id: deviceId });
+    var box = document.querySelector('[data-pollbox="' + pid + '"]');
+    if (box) box.outerHTML = pollBoxHtml(pid);
+    toast("投票成功");
+  } catch (e) { toast("投票失败，请重试"); btn.disabled = false; }
+}
+
 /* ---------- comments ---------- */
 var commentCount = {};
 var feedComments = {}; /* 帖子 id → 该帖的全部评论（loadFeed 一次拉取，默认直接展示） */
 var cmtLikeCount = {};
 var cmtLikedByMe = {};
 var commentLoaded = {};
+var pollOptionsByPost = {}; /* 帖子 id → 该帖的投票选项（loadFeed 一次拉取） */
+var pollVotesByPost = {};   /* 帖子 id → 该帖的全部投票 */
 function myComments() { try { return JSON.parse(lsGet("cb_my_comments") || "[]"); } catch (e) { return []; } }
 function addMyComment(id) { var a = myComments(); if (a.indexOf(id) < 0) a.push(id); lsSet("cb_my_comments", JSON.stringify(a)); }
 function isMyComment(id) { return myComments().indexOf(id) >= 0; }
@@ -2384,28 +2624,47 @@ function updateCmtCount(pid) {
   var el = document.querySelector('[data-ccount="' + pid + '"]');
   if (el) el.textContent = commentCount[pid] || 0;
 }
+/* 同帖临时马甲：同一帖子里，按匿名评论者首次出现的顺序编号（匿名同学 #1、#2…）；换个帖子重新算 */
+function anonNickMap(pid) {
+  var rows = feedComments[pid] || [];
+  var map = {};
+  var n = 0;
+  rows.forEach(function (c) {
+    if (c.is_anonymous && c.device_id && !map[c.device_id]) { n++; map[c.device_id] = "匿名同学 #" + n; }
+  });
+  return map;
+}
+function postDeviceIdOf(pid) {
+  for (var i = 0; i < feedPosts.length; i++) if (feedPosts[i].id === pid) return feedPosts[i].device_id;
+  if (detailPost && detailPost.id === pid) return detailPost.device_id;
+  return null;
+}
 /* 单条评论：头像+名字+时间+文字+图片+点赞♥+举报+删除 */
-function commentHtml(c, pid) {
+function commentHtml(c, pid, postDeviceId, nickMap) {
   var isAnon = !!c.is_anonymous;
-  var who = isAnon ? "匿名" : esc(profName(c.device_id, c.author_name));
+  var isOP = postDeviceId && c.device_id && c.device_id === postDeviceId;
+  var who = isAnon ? ((nickMap && nickMap[c.device_id]) || "匿名") : esc(profName(c.device_id, c.author_name));
   var av = isAnon ? "匿" : esc(profAvatar(c.device_id, c.author_name));
   var whoAttr = isAnon ? "" : ' data-prof="' + esc(c.device_id || "") + '"';
+  var opBadge = isOP ? '<span class="op-badge">楼主</span>' : "";
   var canDel = isMyComment(c.id) || !!adminToken;
   var del = canDel ? '<button class="del-cmt" data-cid="' + c.id + '" data-pid="' + pid + '" type="button">删除</button>' : "";
   var img = c.image_url ? '<img class="post-img cmt-img" src="' + esc(imgUrl(c.image_url)) + '" loading="lazy" alt="评论图片" data-full="' + esc(c.image_url) + '" onerror="this.onerror=null;this.src=\'' + esc(c.image_url) + '\'">' : "";
   var liked = cmtLikedByMe[c.id];
   var lc = cmtLikeCount[c.id] || 0;
-  return '<div class="cmt"><span class="avatar"' + whoAttr + '>' + av + '</span><div class="body"><div class="head"><b' + whoAttr + (isAnon ? "" : ' style="color:var(--primary);cursor:pointer"') + '>' + who + '</b> · ' + timeAgo(c.created_at) + '</div><div class="txt">' + esc(c.content) + '</div>' + img +
+  return '<div class="cmt"><span class="avatar"' + whoAttr + '>' + av + '</span><div class="body"><div class="head"><b' + whoAttr + (isAnon ? "" : ' style="color:var(--primary);cursor:pointer"') + '>' + who + '</b>' + opBadge + ' · ' + timeAgo(c.created_at) + '</div><div class="txt">' + esc(c.content) + '</div>' + img +
     '<div class="cmt-actions"><button class="cmt-like' + (liked ? " liked" : "") + '" data-cid="' + c.id + '" type="button"' + (liked ? " disabled" : "") + '>♥ ' + lc + '</button>' +
     '<button class="cmt-report" data-cid="' + c.id + '" data-pid="' + pid + '" type="button">举报</button>' + del + '</div>' +
     '</div></div>';
 }
 /* 评论列表（默认直接展示，不用点开）：0 条显示友好提示，不足 2 条展示有的几条；只有超过 2 条时下面才有“展示全部评论”进详情页 */
-function cmtListHtml(pid, full) {
+function cmtListHtml(pid, full, postDeviceId) {
   var rows = feedComments[pid] || [];
   if (!rows.length) return '<div class="cmt-empty">发一条友善的评论吧</div>';
+  var nickMap = anonNickMap(pid);
+  if (postDeviceId === undefined) postDeviceId = postDeviceIdOf(pid);
   var shown = full ? rows : rows.slice(0, 2);
-  var html = shown.map(function (c) { return commentHtml(c, pid); }).join("");
+  var html = shown.map(function (c) { return commentHtml(c, pid, postDeviceId, nickMap); }).join("");
   if (!full && rows.length > 2) html += '<button class="cmt-more" data-postid="' + pid + '" type="button">展示全部评论</button>';
   return html;
 }
@@ -2432,7 +2691,7 @@ async function loadComments(pid, full) {
         if (l.device_id === deviceId) cmtLikedByMe[l.comment_id] = true;
       });
     }
-    list.innerHTML = cmtListHtml(pid, full);
+    list.innerHTML = cmtListHtml(pid, full, postDeviceIdOf(pid));
   } catch (e) {
     list.innerHTML = '<div class="cmt-empty">评论加载失败，刷新一下试试</div>';
   }
