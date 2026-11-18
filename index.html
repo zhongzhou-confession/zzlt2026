@@ -163,6 +163,10 @@ button { font-family: inherit; }
 .sort-group { display: flex; gap: 6px; margin-left: auto; }
 .sort-btn { border: 1px solid var(--border); background: #fff; color: var(--text-2); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 700; cursor: pointer; }
 .sort-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+/* 综合交流筛选行：只在 mix 板块显示 */
+.mix-filter { display: none; gap: 8px; flex-wrap: wrap; align-items: center; margin: 0 0 12px; }
+/* 帖子分类小标签（树洞 / 闲聊 / 学习）：综合交流里标明帖子原来的分类 */
+.cat-tag { flex: none; font-size: 11px; font-weight: 600; color: var(--primary); background: var(--primary-soft); border-radius: 999px; padding: 2px 7px; white-space: nowrap; }
 /* 视图切换：列表 / 双宫格 / 三宫格 */
 .view-group { display: flex; gap: 6px; margin-left: 8px; }
 #feed.view-grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
@@ -561,6 +565,12 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
     </div>
     <button id="refreshBtn" type="button">刷新</button>
   </div>
+  <div class="mix-filter" id="mixFilterRow">
+    <button class="sort-btn active" id="mixFilterAll" type="button" data-mixfilter="all">全部</button>
+    <button class="sort-btn" id="mixFilterTreehole" type="button" data-mixfilter="treehole">匿名树洞</button>
+    <button class="sort-btn" id="mixFilterChat" type="button" data-mixfilter="chat">自由讨论</button>
+    <button class="sort-btn" id="mixFilterStudy" type="button" data-mixfilter="study">学习交流</button>
+  </div>
   <div id="feed"><div class="skel-card"><div class="skel" style="width:42%;height:16px"></div><div class="skel" style="width:92%;height:14px"></div><div class="skel" style="width:68%;height:14px"></div><div class="skel" style="width:34%;height:26px;border-radius:999px;margin-bottom:0"></div></div><div class="skel-card"><div class="skel" style="width:42%;height:16px"></div><div class="skel" style="width:92%;height:14px"></div><div class="skel" style="width:68%;height:14px"></div><div class="skel" style="width:34%;height:26px;border-radius:999px;margin-bottom:0"></div></div><div class="skel-card"><div class="skel" style="width:42%;height:16px"></div><div class="skel" style="width:92%;height:14px"></div><div class="skel" style="width:68%;height:14px"></div><div class="skel" style="width:34%;height:26px;border-radius:999px;margin-bottom:0"></div></div></div>
   <button class="load-more" id="loadMoreBtn" type="button" style="display:none">加载更多</button>
 </section>
@@ -588,6 +598,16 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
     </div>
     <div class="row" id="titleRow" style="display:none">
       <input type="text" id="postTitle" maxlength="20" placeholder="姓名，比如：高一三班 小明（也可以是自己）">
+    </div>
+    <div class="row" id="mixCatRow" style="display:none">
+      <div style="display:flex;flex-direction:column;gap:8px;width:100%">
+        <div style="font-size:14px;font-weight:600">发到哪个分类？（必选）</div>
+        <div class="seg" id="mixCatSeg">
+          <button id="mixCatTreehole" type="button" data-mixcat="treehole">匿名树洞</button>
+          <button id="mixCatChat" type="button" data-mixcat="chat">自由讨论</button>
+          <button id="mixCatStudy" type="button" data-mixcat="study">学习交流</button>
+        </div>
+      </div>
     </div>
     <div class="row">
       <textarea id="content" maxlength="500" placeholder="写点什么……（最多 500 字）"></textarea>
@@ -743,6 +763,19 @@ var SECTIONS = [
   { slug: "chat", icon: "msgSquare", name: "\u81ea\u7531\u8ba8\u8bba", color: "#27272A", desc: "想到什么说什么，不限话题", formTitle: "\u81ea\u7531\u8ba8\u8bba", formPh: "\u60f3\u8bf4\u4ec0\u4e48\u5c31\u8bf4\u4ec0\u4e48" }
 ];
 var REPORT_REASONS = ["广告引流", "辱骂攻击", "色情低俗", "违法信息", "其他"];
+
+/* ---------- 综合交流（虚拟板块）：treehole + chat + study 三合一，只做前端展示，帖子仍按原 slug 存库，一个不落 ---------- */
+var MIX_SLUGS = ["treehole", "chat", "study"];
+var MIX_CATS = [
+  { slug: "treehole", name: "匿名树洞", tag: "树洞" },
+  { slug: "chat", name: "自由讨论", tag: "闲聊" },
+  { slug: "study", name: "学习交流", tag: "学习" }
+];
+var MIX_SECTION = { slug: "mix", icon: "msgSquare", name: "综合交流", color: "#27272A", desc: "匿名树洞、自由讨论、学习交流，都在这儿", formTitle: "发帖到综合交流", formPh: "想说什么就说什么……" };
+/* 首页和导航里的板块顺序：心愿墙、风采自荐、综合交流、失物寻回 */
+var UI_SECTIONS = [SECTIONS[0], SECTIONS[1], MIX_SECTION, SECTIONS[3]];
+function mixCatBySlug(slug) { for (var i = 0; i < MIX_CATS.length; i++) if (MIX_CATS[i].slug === slug) return MIX_CATS[i]; return null; }
+function isMixSlug(slug) { return MIX_SLUGS.indexOf(slug) >= 0; }
 
 /* ---------- guarded storage (works even when the in-app browser blocks it) ---------- */
 function lsGet(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } }
@@ -1028,8 +1061,54 @@ function timeAgo(ts) {
   return new Date(ts).toLocaleDateString();
 }
 function sectionBySlug(slug) {
+  if (slug === "mix") return MIX_SECTION;
   for (var i = 0; i < SECTIONS.length; i++) if (SECTIONS[i].slug === slug) return SECTIONS[i];
   return null;
+}
+
+/* ---------- 综合交流筛选：all 全部 / treehole / chat / study；默认全部，记住上次选择 ---------- */
+var mixFilter = "all";
+try { var _mf = lsGet("cb_mix_filter"); if (_mf === "treehole" || _mf === "chat" || _mf === "study" || _mf === "all") mixFilter = _mf; } catch (e) {}
+function mixFilterSlugs() { return mixFilter === "all" ? MIX_SLUGS : [mixFilter]; }
+function feedCacheKey(slug) { return "cb_feed_" + slug + (slug === "mix" ? "_" + mixFilter : ""); }
+function setMixFilter(f, reload) {
+  if (MIX_SLUGS.indexOf(f) < 0 && f !== "all") f = "all";
+  mixFilter = f;
+  try { lsSet("cb_mix_filter", f); } catch (e) {}
+  renderMixFilter();
+  if (reload !== false && currentSection === "mix") loadFeed("mix");
+}
+function renderMixFilter() {
+  var row = document.getElementById("mixFilterRow");
+  if (!row) return;
+  row.style.display = currentSection === "mix" ? "flex" : "none";
+  var btns = row.querySelectorAll("[data-mixfilter]");
+  for (var i = 0; i < btns.length; i++) {
+    var b = btns[i];
+    b.classList.toggle("active", b.getAttribute("data-mixfilter") === mixFilter);
+  }
+}
+/* 综合交流各分类的帖子数（用于筛选按钮上的计数；拿不到就只显示名字） */
+var mixCounts = null;
+async function loadMixCounts() {
+  try {
+    var rows = await apiGet("/rest/v1/posts?select=section&section=in.(treehole,chat,study)&order=created_at.desc&limit=100");
+    var c = { all: 0, treehole: 0, chat: 0, study: 0 };
+    (rows || []).forEach(function (r) { if (c[r.section] !== undefined) { c[r.section]++; c.all++; } });
+    mixCounts = c;
+    renderMixFilterCounts();
+  } catch (e) { /* 计数拿不到不影响看帖 */ }
+}
+function renderMixFilterCounts() {
+  var row = document.getElementById("mixFilterRow");
+  if (!row || !mixCounts) return;
+  var labels = { all: "全部", treehole: "匿名树洞", chat: "自由讨论", study: "学习交流" };
+  var btns = row.querySelectorAll("[data-mixfilter]");
+  for (var i = 0; i < btns.length; i++) {
+    var b = btns[i];
+    var k = b.getAttribute("data-mixfilter");
+    b.textContent = labels[k] + " " + (mixCounts[k] || 0);
+  }
 }
 
 /* ---------- state ---------- */
@@ -1324,12 +1403,18 @@ function _openSection(slug) {
   document.getElementById("crumbHome").onclick = goHome;
   document.getElementById("rankBox").innerHTML = "";
   showView("section");
+  renderMixFilter(); /* 综合交流才显示筛选行，其他板块隐藏 */
+  if (slug === "mix") loadMixCounts(); /* 筛选按钮上的各分类计数 */
   loadFeed(slug);
 }
 function routeFromHash() {
   var h = window.location.hash || "";
   var m = h.match(/^#\/s\/([a-z]+)$/);
-  if (m && sectionBySlug(m[1])) { _openSection(m[1]); return; }
+  if (m && sectionBySlug(m[1])) {
+    /* 旧链接 #/s/treehole、#/s/chat、#/s/study：跳到综合交流，并筛到对应分类 */
+    if (isMixSlug(m[1])) { setMixFilter(m[1], false); _openSection("mix"); return; }
+    _openSection(m[1]); return;
+  }
   var u = h.match(/^#\/u\/(.+)$/);
   if (u) { _openProfile(decodeURIComponent(u[1])); return; }
   var pp = h.match(/^#\/p\/([0-9a-f\-]{36})$/);
@@ -1346,6 +1431,8 @@ function goHome() {
   _showHome();
 }
 function openSection(slug) {
+  /* 首页“最新动态”里点到树洞/闲聊/学习的帖子：进综合交流并筛到对应分类 */
+  if (isMixSlug(slug)) { setMixFilter(slug, false); slug = "mix"; }
   if ((window.location.hash || "") === "#/s/" + slug) { _openSection(slug); return; }
   window.location.hash = "#/s/" + slug;
 }
@@ -1359,12 +1446,13 @@ function openCompose(slug) {
 function _openCompose(slug) {
   var s = sectionBySlug(slug);
   if (!s) { _showHome(); return; }
-  if (composeSection !== slug) { resetComposeMedia(); resetPollCompose(); } /* 换板块发帖时清空上次选的图/视频/投票 */
+  if (composeSection !== slug) { resetComposeMedia(); resetPollCompose(); resetMixCat(); } /* 换板块发帖时清空上次选的图/视频/投票/分类 */
   composeSection = slug;
   currentSection = slug;
   document.getElementById("formTitle").textContent = s.formTitle;
   document.getElementById("content").placeholder = s.formPh;
   document.getElementById("titleRow").style.display = slug === "contest" ? "flex" : "none";
+  document.getElementById("mixCatRow").style.display = slug === "mix" ? "block" : "none"; /* 综合交流发帖必须先选分类 */
   document.getElementById("composeCrumb").textContent = s.name + " · 发帖";
   showView("compose");
   restoreDraft(); /* 有未发送的草稿就恢复出来 */
@@ -1440,8 +1528,9 @@ function openPost(id) {
 }
 document.getElementById("postBackBtn").onclick = function () {
   if ((window.location.hash || "").indexOf("#/p/") !== 0) { _showHome(); return; }
-  /* 群聊直链点进来时没有站内上一页：直接回首页，别退出网页 */
+  /* 群聊直链点进来时没有站内上一页：树洞/闲聊/学习的帖子回综合交流，其他回首页，别退出网页 */
   if (inAppNav && history.length > 1) { history.back(); return; }
+  if (detailPost && isMixSlug(detailPost.section)) { window.location.hash = "#/s/mix"; return; }
   window.location.hash = "#/";
 };
 
@@ -1741,7 +1830,7 @@ function saveDraft() {
   var c = document.getElementById("content").value;
   var t = document.getElementById("postTitle").value;
   if (!c && !t) { try { window.localStorage.removeItem("cb_draft"); } catch (e) {} return; }
-  lsSet("cb_draft", JSON.stringify({ title: t, content: c, section: currentSection, savedAt: Date.now() }));
+  lsSet("cb_draft", JSON.stringify({ title: t, content: c, section: currentSection, mixCat: (currentSection === "mix" ? mixCategory : null), savedAt: Date.now() }));
 }
 function restoreDraft() {
   var contentEl = document.getElementById("content");
@@ -1754,6 +1843,7 @@ function restoreDraft() {
   if (!d || d.section !== currentSection) return;
   if (d.content) contentEl.value = d.content;
   if (d.title) titleEl.value = d.title;
+  if (d.mixCat && currentSection === "mix") setMixCategory(d.mixCat); /* 草稿里的分类也恢复 */
   var hint = document.getElementById("draftHint");
   if (hint && (d.content || d.title)) hint.style.display = "block";
 }
@@ -1780,6 +1870,18 @@ document.getElementById("topRefresh").onclick = function () { if (currentSection
 /* 排序：最新 / 最热 */
 document.getElementById("sortNew").onclick = function () { setFeedSort("new"); };
 document.getElementById("sortHot").onclick = function () { setFeedSort("hot"); };
+/* 综合交流筛选：全部 / 匿名树洞 / 自由讨论 / 学习交流 */
+document.getElementById("mixFilterRow").addEventListener("click", function (e) {
+  var b = e.target.closest ? e.target.closest("[data-mixfilter]") : null;
+  if (!b) return;
+  setMixFilter(b.getAttribute("data-mixfilter"));
+});
+/* 综合交流发帖：选分类 */
+document.getElementById("mixCatSeg").addEventListener("click", function (e) {
+  var b = e.target.closest ? e.target.closest("[data-mixcat]") : null;
+  if (!b) return;
+  setMixCategory(b.getAttribute("data-mixcat"));
+});
 /* 加载更多：先展示已拉取的，没有了再向服务端拉下一页 */
 document.getElementById("loadMoreBtn").onclick = async function () {
   if (!currentSection) return;
@@ -1857,11 +1959,17 @@ function renderHome(posts) {
     counts[p.section] = (counts[p.section] || 0) + 1;
     if (!latest[p.section]) latest[p.section] = p;
   });
-  SECTIONS.forEach(function (s) {
-    var c = grid.querySelector('[data-count="' + s.slug + '"]');
-    if (c) c.textContent = (counts[s.slug] || 0) + " 帖";
+  UI_SECTIONS.forEach(function (s) {
+    /* 综合交流的计数和最新帖是三个分类之和 / 之中最新的一条 */
+    var slugs = s.slug === "mix" ? MIX_SLUGS : [s.slug];
+    var c = 0, lp = null;
+    slugs.forEach(function (sl) {
+      c += counts[sl] || 0;
+      if (latest[sl] && (!lp || latest[sl].created_at > lp.created_at)) lp = latest[sl];
+    });
+    var cel = grid.querySelector('[data-count="' + s.slug + '"]');
+    if (cel) cel.textContent = c + " 帖";
     var l = grid.querySelector('[data-latest="' + s.slug + '"]');
-    var lp = latest[s.slug];
     if (l) l.innerHTML = lp ? ('<span class="latest-tag">最新</span><span class="latest-txt">' + esc(lp.is_anonymous ? "匿名" : (lp.author_name || "同学")) + ' · ' + esc(lp.content) + '</span>') : "还没有帖子";
   });
   var hl = document.getElementById("homeLatest");
@@ -1878,7 +1986,7 @@ function renderHome(posts) {
 }
 async function loadHome() {
   var grid = document.getElementById("secGrid");
-  grid.innerHTML = SECTIONS.map(function (s, i) {
+  grid.innerHTML = UI_SECTIONS.map(function (s, i) {
     return '<div class="sec-card" data-slug="' + s.slug + '" style="animation-delay:' + (i * 60) + 'ms">' +
       '<div class="sec-head"><span class="icon">' + ICONS[s.icon] + '</span><h3>' + s.name + '</h3><span class="sec-count" data-count="' + s.slug + '">…</span></div>' +
       '<p>' + s.desc + '</p>' +
@@ -1897,7 +2005,7 @@ async function loadHome() {
     renderHome(posts);
   } catch (e) {
     if (!hasCache) {
-      SECTIONS.forEach(function (s) {
+      UI_SECTIONS.forEach(function (s) {
         var c = grid.querySelector('[data-count="' + s.slug + '"]');
         if (c) c.textContent = "暂时无法加载";
       });
@@ -1972,7 +2080,15 @@ var feedOffset = 0;          /* 最新排序下已向服务端请求的帖子数
 var feedHasMore = false;     /* 服务端是否还有更多（最新排序） */
 var feedAllLoaded = false;   /* 最热排序/风采自荐：已一次拉全量 */
 function postsUrl(slug, limit, offset) {
-  return "/rest/v1/posts?select=id,section,title,content,image_url,image_urls,image_paths,video_url,video_path,author_name,is_anonymous,device_id,resolved,is_featured,created_at&section=eq." + encodeURIComponent(slug) + "&order=created_at.desc&limit=" + limit + "&offset=" + offset;
+  var q = "/rest/v1/posts?select=id,section,title,content,image_url,image_urls,image_paths,video_url,video_path,author_name,is_anonymous,device_id,resolved,is_featured,created_at&";
+  if (slug === "mix") {
+    /* 综合交流：默认查三个分类的全部帖子（section IN），按时间倒序；筛了分类就只查那一个 */
+    var slugs = mixFilterSlugs();
+    q += slugs.length === 1 ? ("section=eq." + encodeURIComponent(slugs[0])) : ("section=in.(" + slugs.join(",") + ")");
+  } else {
+    q += "section=eq." + encodeURIComponent(slug);
+  }
+  return q + "&order=created_at.desc&limit=" + limit + "&offset=" + offset;
 }
 async function loadFeed(slug, append) {
   var feed = document.getElementById("feed");
@@ -1984,7 +2100,7 @@ async function loadFeed(slug, append) {
     commentLoaded = {};
     feedShown = FEED_PAGE; feedOffset = 0; feedHasMore = false; feedAllLoaded = false;
     /* 本地有缓存就先显示出来（秒开），再后台拉最新的 */
-    var cached = cacheGet("cb_feed_" + slug);
+    var cached = cacheGet(feedCacheKey(slug));
     hasCache = !!(cached && cached.posts);
     if (hasCache) {
       await applyFeedData(cached);
@@ -2035,7 +2151,7 @@ async function loadFeed(slug, append) {
     var fresh = { posts: posts || [], likes: likes, cmtRows: cmtRows, cmtLikes: cmtLikes, pollOpts: pollOpts, pollVotes: pollVotes };
     await applyFeedData(fresh);
     /* 存到本地，下次打开直接显示 */
-    cacheSet("cb_feed_" + slug, fresh);
+    cacheSet(feedCacheKey(slug), fresh);
     renderFeed(slug);
     if (slug === "contest") renderRank();
   } catch (e) {
@@ -2057,7 +2173,7 @@ function renderFeed(slug) {
   if (!feedPosts.length) {
     feed.innerHTML = '<div class="empty-state"><div class="empty-ico">' + ICONS[s.icon] + '</div><h3>这里还是空的</h3><p>成为第一个发帖的人吧</p><button class="empty-cta" type="button" id="emptyCta">发布首帖</button></div>';
     var cta = document.getElementById("emptyCta");
-    if (cta) cta.onclick = function () { document.getElementById("content").focus(); window.scrollTo(0, 0); };
+    if (cta) cta.onclick = function () { openCompose(currentSection); };
     if (moreBtn) moreBtn.style.display = "none";
     return;
   }
@@ -2107,7 +2223,7 @@ function postMediaHtml(p) {
 function postBadgesHtml(p, s) {
   var h = "";
   if (p.is_featured) h += '<span class="post-badge badge-featured">精选</span>';
-  if (p.resolved) h += '<span class="post-badge badge-resolved">' + (s.slug === "lostfound" ? "已找到" : "已解决") + '</span>';
+  if (p.resolved) h += '<span class="post-badge badge-resolved">' + (p.section === "lostfound" ? "已找到" : "已解决") + '</span>';
   return h;
 }
 function findPost(pid) {
@@ -2165,23 +2281,26 @@ function postHtml(p, s, i, full) {
   var img = postMediaHtml(p);
   var poll = pollBoxHtml(p.id);
   var liked = likedByMe[p.id];
-  var isContest = s.slug === "contest";
+  var isContest = p.section === "contest";
   var likeLabel = isContest ? (liked ? "已投票" : "投票") : (liked ? "已点赞" : "点赞");
   var del = isMyPost(p.id) ? '<button class="del" data-id="' + p.id + '" type="button">删除</button>' : "";
   var edit = isMyPost(p.id) ? '<button class="edit" data-id="' + p.id + '" type="button">编辑</button>' : "";
   var share = full ? '<button class="share" data-id="' + p.id + '" type="button">分享</button>' : ""; /* 详情页才有：一键复制分享 */
   var resolveBtn = "";
-  if (p.device_id === deviceId && (s.slug === "lostfound" || s.slug === "study")) {
-    resolveBtn = '<button class="resolve-btn" data-id="' + p.id + '" data-section="' + s.slug + '" data-resolved="' + (p.resolved ? "1" : "0") + '" type="button">' + (p.resolved ? (s.slug === "lostfound" ? "取消已找到" : "取消已解决") : (s.slug === "lostfound" ? "标为已找到" : "标为已解决")) + '</button>';
+  if (p.device_id === deviceId && (p.section === "lostfound" || p.section === "study")) {
+    resolveBtn = '<button class="resolve-btn" data-id="' + p.id + '" data-section="' + p.section + '" data-resolved="' + (p.resolved ? "1" : "0") + '" type="button">' + (p.resolved ? (p.section === "lostfound" ? "取消已找到" : "取消已解决") : (p.section === "lostfound" ? "标为已找到" : "标为已解决")) + '</button>';
   }
   var featureBtn = "";
   if (adminToken) {
     featureBtn = '<button class="feature-btn" data-id="' + p.id + '" type="button">' + (p.is_featured ? "取消精选" : "设为精选") + '</button>';
   }
+  /* 综合交流里的帖子：标明它原来的分类（树洞 / 闲聊 / 学习），按帖子真实 section 判断 */
+  var mc = mixCatBySlug(p.section);
+  var catTag = mc ? '<span class="cat-tag">' + mc.tag + '</span>' : "";
   return '<div class="post" data-post="' + p.id + '" style="animation-delay:' + (Math.min(i || 0, 8) * 60) + 'ms">' +
     '<div class="meta"><span class="avatar"' + whoAttr + '>' + av + '</span>' +
     '<span class="' + whoCls + '"' + whoAttr + '>' + who + '</span>' +
-    '<span class="time">' + timeAgo(p.created_at) + '</span></div>' +
+    '<span class="time">' + timeAgo(p.created_at) + '</span>' + catTag + '</div>' +
     '<div class="post-badges" data-badges="' + p.id + '">' + postBadgesHtml(p, s) + '</div>' +
     title + '<div class="text" data-posttext="' + p.id + '">' + esc(p.content) + '</div>' + img + poll +
     '<div class="actions">' +
@@ -2305,6 +2424,26 @@ function containsBannedWord(text) {
   return false;
 }
 
+/* ---------- 综合交流发帖：必须先选一个分类，帖子按所选分类存库 ---------- */
+var mixCategory = null;
+function setMixCategory(cat) {
+  mixCategory = cat;
+  var seg = document.getElementById("mixCatSeg");
+  if (seg) {
+    var btns = seg.querySelectorAll("[data-mixcat]");
+    for (var i = 0; i < btns.length; i++) btns[i].classList.toggle("on", btns[i].getAttribute("data-mixcat") === cat);
+  }
+  saveDraft();
+}
+function resetMixCat() {
+  mixCategory = null;
+  var seg = document.getElementById("mixCatSeg");
+  if (seg) {
+    var btns = seg.querySelectorAll("[data-mixcat]");
+    for (var i = 0; i < btns.length; i++) btns[i].classList.remove("on");
+  }
+}
+
 /* ---------- 轻量投票（发帖页可选）：默认关闭，想加才加，最多 4 个选项 ---------- */
 var pollOn = false;
 var pollOptions = ["", ""];
@@ -2356,6 +2495,12 @@ document.getElementById("pollInputs").addEventListener("click", function (e) {
 document.getElementById("submitBtn").onclick = async function () {
   var btn = this;
   if (!currentSection) return;
+  /* 综合交流：必须先选分类，帖子按所选分类（treehole / chat / study）存库 */
+  var effSection = currentSection;
+  if (currentSection === "mix") {
+    if (!mixCategory) { toast("请先选一个分类"); return; }
+    effSection = mixCategory;
+  }
   if (videoCompressing) { toast("视频正在压缩，请稍等"); return; }
   var content = document.getElementById("content").value.trim();
   var title = "";
@@ -2401,7 +2546,7 @@ document.getElementById("submitBtn").onclick = async function () {
       videoUrl = (proxyOn() ? PROXY_URL : SUPABASE_URL) + "/storage/v1/object/public/confession-images/" + videoPath;
     }
     var r = await apiPost("/functions/v1/submit-post", {
-      section: currentSection, title: title || null, content: content,
+      section: effSection, title: title || null, content: content,
       image_url: imageUrls[0] || null, image_path: imagePaths[0] || null,
       image_urls: imageUrls.length ? imageUrls : null, image_paths: imagePaths.length ? imagePaths : null,
       video_url: videoUrl, video_path: videoPath,
@@ -2415,6 +2560,7 @@ document.getElementById("submitBtn").onclick = async function () {
     document.getElementById("postTitle").value = "";
     resetComposeMedia(); /* 发成功了，选的图/视频清空 */
     resetPollCompose(); /* 发成功了，投票选项清空 */
+    resetMixCat(); /* 发成功了，分类选择清空 */
     clearDraft(); /* 发成功了，草稿清空 */
     toast("发布成功");
     maybeShowRecoveryHint(); /* 首次发帖成功后提醒保存恢复码 */
