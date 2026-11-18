@@ -52,11 +52,23 @@ body.real-name-mode {
   --primary-dark: #B91C1C;
   --primary-soft: #FEE2E2;
 }
-/* 发帖表单可折叠：默认收起省空间，点标题展开；有草稿时自动展开 */
-#formTitle { cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
-#formTitle::after { content: "›"; font-size: 22px; color: var(--text-3); transition: transform .2s ease; line-height: 1; }
-#postFormCard:not(.collapsed) #formTitle::after { transform: rotate(90deg); }
-#postFormCard.collapsed #formBody { display: none; }
+/* 悬浮发帖按钮：只在板块页显示（showView 里控制） */
+#fabPost { position: fixed; right: 20px; bottom: 24px; width: 56px; height: 56px; border-radius: 50%; border: 0; background: var(--primary); color: #fff; font-size: 30px; font-weight: 400; line-height: 1; cursor: pointer; z-index: 120; display: none; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(0,0,0,.25); padding: 0 0 2px; }
+#fabPost:active { transform: scale(.95); }
+/* 发帖页：图片/视频预览 */
+.media-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.media-preview:empty { display: none; }
+.media-thumb { position: relative; width: 84px; height: 84px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); flex: none; }
+.media-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.media-thumb .media-x { position: absolute; top: 2px; right: 2px; width: 22px; height: 22px; border-radius: 50%; border: 0; background: rgba(0,0,0,.55); color: #fff; font-size: 14px; line-height: 1; cursor: pointer; padding: 0; }
+.media-video { position: relative; width: 100%; max-width: 420px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
+.media-video video { width: 100%; display: block; max-height: 320px; background: #000; }
+.media-video .media-x { position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; border-radius: 50%; border: 0; background: rgba(0,0,0,.55); color: #fff; font-size: 15px; line-height: 1; cursor: pointer; padding: 0; z-index: 1; }
+/* 帖子多图画廊（最多 5 张，点开放大走同一个灯箱） */
+.post-gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 12px; }
+.post-gallery .post-img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; margin-top: 0; }
+/* 帖子视频 */
+.post-video { width: 100%; border-radius: 8px; margin-top: 12px; display: block; background: #000; max-height: 420px; }
 html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
 body { font-family: Inter, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; line-height: 1.6; font-variant-numeric: tabular-nums; }
 button { font-family: inherit; }
@@ -504,35 +516,6 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
   <section id="secHeader" class="sec-header"></section>
   <div id="rankBox"></div>
 
-  <div class="card collapsed" id="postFormCard">
-    <h2 id="formTitle">发帖</h2>
-    <div id="formBody">
-    <div class="row">
-      <div class="seg">
-        <button id="btnAnon" class="on" type="button">匿名</button>
-        <button id="btnReal" type="button">实名</button>
-      </div>
-      <span class="hint" id="modeHint">匿名发帖，不显示你的名字</span>
-    </div>
-    <div class="row" id="nameRow" style="display:none">
-      <input type="text" id="authorName" maxlength="20" placeholder="你的名字（比如：高一三班 小明）">
-    </div>
-    <div class="row" id="titleRow" style="display:none">
-      <input type="text" id="postTitle" maxlength="20" placeholder="姓名，比如：高一三班 小明（也可以是自己）">
-    </div>
-    <div class="row">
-      <textarea id="content" maxlength="500" placeholder="写点什么……（最多 500 字）"></textarea>
-    </div>
-    <div class="hint" id="draftHint" style="display:none">已恢复上次未发送的草稿</div>
-    <div class="row">
-      <label class="filelabel">上传照片<input type="file" id="photo" accept="image/*"></label>
-      <span id="fileName"></span>
-      <span class="hint">照片会自动压缩到 500KB 以内，手机上看依然清晰</span>
-    </div>
-    <button class="submit" id="submitBtn" type="button">匿名发布</button>
-    </div>
-  </div>
-
   <div class="toolbar">
     <h2 id="feedTitle">帖子</h2>
     <div class="sort-group">
@@ -555,6 +538,48 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
   <nav class="crumb"><button type="button" id="postBackBtn">返回</button></nav>
   <div id="postDetail"></div>
 </section>
+
+<!-- 发帖页 -->
+<section id="viewCompose" class="wrap" style="display:none">
+  <nav class="crumb"><button type="button" id="composeBackBtn">返回</button><span class="sep">/</span><span class="cur" id="composeCrumb">发帖</span></nav>
+  <div class="card">
+    <h2 id="formTitle">发帖</h2>
+    <div class="row">
+      <div class="seg">
+        <button id="btnAnon" class="on" type="button">匿名</button>
+        <button id="btnReal" type="button">实名</button>
+      </div>
+      <span class="hint" id="modeHint">匿名发帖，不显示你的名字</span>
+    </div>
+    <div class="row" id="nameRow" style="display:none">
+      <input type="text" id="authorName" maxlength="20" placeholder="你的名字（比如：高一三班 小明）">
+    </div>
+    <div class="row" id="titleRow" style="display:none">
+      <input type="text" id="postTitle" maxlength="20" placeholder="姓名，比如：高一三班 小明（也可以是自己）">
+    </div>
+    <div class="row">
+      <textarea id="content" maxlength="500" placeholder="写点什么……（最多 500 字）"></textarea>
+    </div>
+    <div class="hint" id="draftHint" style="display:none">已恢复上次未发送的草稿</div>
+    <div class="row">
+      <label class="filelabel">上传照片（最多 5 张）<input type="file" id="photo" accept="image/*" multiple></label>
+      <span id="fileName"></span>
+      <span class="hint">照片会自动压缩到 500KB 以内，手机上看依然清晰</span>
+    </div>
+    <div id="photoPreview" class="media-preview"></div>
+    <div class="row">
+      <label class="filelabel">上传视频（1 段，压缩到 5MB 以内）<input type="file" id="video" accept="video/*"></label>
+      <span id="videoName"></span>
+      <span class="hint">超过 2 分钟的视频请剪短再发</span>
+    </div>
+    <div id="videoPreview" class="media-preview"></div>
+    <div class="hint" id="videoProgress" style="display:none"></div>
+    <button class="submit" id="submitBtn" type="button">匿名发布</button>
+  </div>
+</section>
+
+<!-- 悬浮发帖按钮：只在板块页显示 -->
+<button id="fabPost" type="button" aria-label="发帖">＋</button>
 
 <!-- 我的帖子 -->
 <section id="viewMine" class="wrap" style="display:none">
@@ -1018,6 +1043,10 @@ function showView(v) {
   document.getElementById("viewMine").style.display = v === "mine" ? "block" : "none";
   document.getElementById("viewProfile").style.display = v === "profile" ? "block" : "none";
   document.getElementById("viewPost").style.display = v === "post" ? "block" : "none";
+  document.getElementById("viewCompose").style.display = v === "compose" ? "block" : "none";
+  /* 悬浮发帖按钮只在板块页显示 */
+  var fab = document.getElementById("fabPost");
+  if (fab) fab.style.display = v === "section" ? "flex" : "none";
   window.scrollTo(0, 0);
 }
 /* ---------- 个人主页 ---------- */
@@ -1057,7 +1086,7 @@ async function loadProfile(did) {
     document.getElementById("profSig").textContent = sig;
     document.getElementById("profMeta").textContent = isMine ? "这是你的主页" : "";
     /* 只显示实名帖子，匿名帖子不关联到主页 */
-    var posts = await apiGet("/rest/v1/posts?select=id,section,title,content,image_url,author_name,is_anonymous,device_id,created_at&device_id=eq." + encodeURIComponent(did) + "&is_anonymous=eq.false&order=created_at.desc&limit=50");
+    var posts = await apiGet("/rest/v1/posts?select=id,section,title,content,image_url,image_urls,image_paths,video_url,video_path,author_name,is_anonymous,device_id,created_at&device_id=eq." + encodeURIComponent(did) + "&is_anonymous=eq.false&order=created_at.desc&limit=50");
     if (!posts || !posts.length) { feed.innerHTML = '<div class="empty">还没有实名发过帖子</div>'; return; }
     feed.innerHTML = posts.map(function (po, i) {
       var s = sectionBySlug(po.section) || { name: "论坛", slug: po.section };
@@ -1140,7 +1169,7 @@ async function doSearch() {
   res.innerHTML = '<div class="empty">正在搜索……</div>';
   try {
     var kw = encodeURIComponent("%" + q.replace(/%/g, "\\%").replace(/_/g, "\\_") + "%");
-    var posts = await apiGet("/rest/v1/posts?select=id,section,title,content,image_url,author_name,is_anonymous,device_id,created_at&or=(content.ilike." + kw + ",title.ilike." + kw + ")&order=created_at.desc&limit=50");
+    var posts = await apiGet("/rest/v1/posts?select=id,section,title,content,image_url,image_urls,image_paths,video_url,video_path,author_name,is_anonymous,device_id,created_at&or=(content.ilike." + kw + ",title.ilike." + kw + ")&order=created_at.desc&limit=50");
     if (!posts || !posts.length) { res.innerHTML = '<div class="empty">没有找到包含“' + esc(q) + '”的帖子，换个词试试</div>'; return; }
     var dids = [];
     posts.forEach(function (p) { if (!p.is_anonymous && p.device_id && dids.indexOf(p.device_id) < 0) dids.push(p.device_id); });
@@ -1169,7 +1198,7 @@ async function loadMine() {
   if (!ids.length) { box.innerHTML = '<div class="empty">你还没有发过帖子（这台设备上发的才会出现在这里）</div>'; return; }
   box.innerHTML = skelFeedHtml();
   try {
-    var posts = await apiGet("/rest/v1/posts?select=id,section,title,content,image_url,author_name,is_anonymous,device_id,created_at&id=in.(" + ids.map(encodeURIComponent).join(",") + ")&order=created_at.desc");
+    var posts = await apiGet("/rest/v1/posts?select=id,section,title,content,image_url,image_urls,image_paths,video_url,video_path,author_name,is_anonymous,device_id,created_at&id=in.(" + ids.map(encodeURIComponent).join(",") + ")&order=created_at.desc");
     if (!posts || !posts.length) { box.innerHTML = '<div class="empty">这些帖子可能已被清理（每月 1 号会清库）</div>'; return; }
     var dids = [];
     posts.forEach(function (p) { if (!p.is_anonymous && p.device_id && dids.indexOf(p.device_id) < 0) dids.push(p.device_id); });
@@ -1242,12 +1271,8 @@ function _openSection(slug) {
   document.getElementById("backBtn").onclick = goHome;
   document.getElementById("crumb").innerHTML = '<button type="button" id="crumbHome">首页</button><span class="sep">/</span><span class="cur">' + s.name + '</span>';
   document.getElementById("crumbHome").onclick = goHome;
-  document.getElementById("formTitle").textContent = s.formTitle;
-  document.getElementById("content").placeholder = s.formPh;
-  document.getElementById("titleRow").style.display = slug === "contest" ? "flex" : "none";
   document.getElementById("rankBox").innerHTML = "";
   showView("section");
-  restoreDraft(); /* 有未发送的草稿就恢复出来 */
   loadFeed(slug);
 }
 function routeFromHash() {
@@ -1258,6 +1283,8 @@ function routeFromHash() {
   if (u) { _openProfile(decodeURIComponent(u[1])); return; }
   var pp = h.match(/^#\/p\/([0-9a-f\-]{36})$/);
   if (pp) { _openPost(pp[1]); return; }
+  var pc = h.match(/^#\/post\/([a-z]+)$/);
+  if (pc && sectionBySlug(pc[1])) { _openCompose(pc[1]); return; }
   _showHome();
 }
 /* 站内导航标记：用户在站内点过链接（hash 变化）才算有上一页；群聊直链点进来时没有，返回键直接回首页 */
@@ -1272,6 +1299,37 @@ function openSection(slug) {
   window.location.hash = "#/s/" + slug;
 }
 
+/* ---------- 独立发帖页：右下角悬浮 ➕ 进来，带当前板块 ---------- */
+var composeSection = null;
+function openCompose(slug) {
+  if ((window.location.hash || "") === "#/post/" + slug) { _openCompose(slug); return; }
+  window.location.hash = "#/post/" + slug;
+}
+function _openCompose(slug) {
+  var s = sectionBySlug(slug);
+  if (!s) { _showHome(); return; }
+  if (composeSection !== slug) resetComposeMedia(); /* 换板块发帖时清空上次选的图/视频 */
+  composeSection = slug;
+  currentSection = slug;
+  document.getElementById("formTitle").textContent = s.formTitle;
+  document.getElementById("content").placeholder = s.formPh;
+  document.getElementById("titleRow").style.display = slug === "contest" ? "flex" : "none";
+  document.getElementById("composeCrumb").textContent = s.name + " · 发帖";
+  showView("compose");
+  restoreDraft(); /* 有未发送的草稿就恢复出来 */
+  updateSubmitBtn();
+}
+document.getElementById("composeBackBtn").onclick = function () {
+  var slug = composeSection || currentSection;
+  if (!slug) { _showHome(); return; }
+  /* 从板块页点 ➕ 进来的，浏览器返回回板块页；群聊直链直接进发帖页的，直接跳回板块页 */
+  if (inAppNav && history.length > 1) { history.back(); return; }
+  window.location.hash = "#/s/" + slug;
+};
+document.getElementById("fabPost").onclick = function () {
+  if (currentSection) openCompose(currentSection);
+};
+
 /* ---------- 帖子详情页：点开帖子单独进入，往下滑是全部评论 ---------- */
 var detailPostId = null;
 async function _openPost(id) {
@@ -1280,7 +1338,7 @@ async function _openPost(id) {
   box.innerHTML = skelFeedHtml();
   showView("post");
   try {
-    var rows = await apiGet("/rest/v1/posts?select=id,section,title,content,image_url,author_name,is_anonymous,device_id,created_at&id=eq." + id + "&limit=1");
+    var rows = await apiGet("/rest/v1/posts?select=id,section,title,content,image_url,image_urls,image_paths,video_url,video_path,author_name,is_anonymous,device_id,created_at&id=eq." + id + "&limit=1");
     var p = rows && rows[0];
     if (!p) { box.innerHTML = '<div class="empty">帖子不存在或已被删除</div>'; return; }
     var s = sectionBySlug(p.section) || { name: "", icon: "heart" };
@@ -1423,15 +1481,6 @@ function updateSubmitBtn() {
   /* 实名模式：整页由绿变红，提醒正在用真实身份发帖 */
   document.body.classList.toggle("real-name-mode", !isAnon);
 }
-/* 发帖表单折叠：默认收起省空间，点标题展开/收起 */
-function setFormCollapsed(c) {
-  var card = document.getElementById("postFormCard");
-  if (card) card.classList.toggle("collapsed", !!c);
-}
-document.getElementById("formTitle").onclick = function () {
-  var card = document.getElementById("postFormCard");
-  if (card) setFormCollapsed(!card.classList.contains("collapsed"));
-};
 /* ---------- anonymous / real-name toggle (pure DOM: works even if backend is down) ---------- */
 var isAnon = true;
 document.getElementById("btnAnon").onclick = function () {
@@ -1453,8 +1502,179 @@ document.getElementById("btnReal").onclick = function () {
 };
 /* 名字框里打字时，按钮文案跟着变（以【昵称】发布） */
 document.getElementById("authorName").addEventListener("input", updateSubmitBtn);
-document.getElementById("photo").onchange = function () {
-  document.getElementById("fileName").textContent = this.files.length ? this.files[0].name : "";
+/* ---------- 发帖页多图（最多 5 张）+ 单视频（压缩到 5MB） ---------- */
+var MAX_PHOTOS = 5;
+var VIDEO_MAX_BYTES = 5 * 1024 * 1024;   /* 5MB */
+var VIDEO_MAX_SEC = 120;                  /* 2 分钟 */
+var VIDEO_MAX_FILE = 200 * 1024 * 1024;   /* 200MB */
+var selImages = []; /* 压缩后的待上传图片 [{file, name, type, url}] */
+var selVideo = null; /* 压缩后的视频 {file, name, type, url, size} */
+var videoCompressing = false;
+function updateFileName() {
+  document.getElementById("fileName").textContent = selImages.length ? ("已选 " + selImages.length + " 张照片") : "";
+}
+function renderPhotoPreview() {
+  var box = document.getElementById("photoPreview");
+  box.innerHTML = selImages.map(function (im, i) {
+    return '<div class="media-thumb"><img src="' + esc(im.url) + '" alt="照片预览"><button type="button" class="media-x" data-photo-x="' + i + '">×</button></div>';
+  }).join("");
+}
+document.getElementById("photoPreview").addEventListener("click", function (ev) {
+  var b = ev.target.closest ? ev.target.closest("[data-photo-x]") : null;
+  if (!b) return;
+  var idx = parseInt(b.getAttribute("data-photo-x"), 10);
+  var removed = selImages[idx];
+  if (removed && removed.url) URL.revokeObjectURL(removed.url);
+  selImages.splice(idx, 1);
+  renderPhotoPreview(); updateFileName();
+});
+document.getElementById("photo").onchange = async function () {
+  var files = Array.prototype.slice.call(this.files || []);
+  this.value = ""; /* 允许重复选同一张 */
+  if (!files.length) return;
+  var remain = MAX_PHOTOS - selImages.length;
+  if (files.length > remain) { toast("最多只能发 5 张照片"); files = files.slice(0, Math.max(0, remain)); }
+  for (var i = 0; i < files.length; i++) {
+    var f = files[i];
+    if (!/^image\//.test(f.type || "")) continue;
+    var up = await compressImage(f); /* 沿用单图压缩：压到 500KB 以内 */
+    selImages.push({ file: up.blob, name: up.name, type: up.type, url: URL.createObjectURL(up.blob) });
+  }
+  renderPhotoPreview(); updateFileName();
+};
+function showVideoProgress(msg) {
+  var el = document.getElementById("videoProgress");
+  if (el) { el.textContent = msg; el.style.display = "block"; }
+}
+function hideVideoProgress() {
+  var el = document.getElementById("videoProgress");
+  if (el) el.style.display = "none";
+}
+function renderVideoPreview() {
+  var box = document.getElementById("videoPreview");
+  if (!selVideo) { box.innerHTML = ""; return; }
+  box.innerHTML = '<div class="media-video"><video src="' + esc(selVideo.url) + '" controls preload="metadata" playsinline></video><button type="button" class="media-x" id="videoRemoveBtn">×</button></div>';
+  document.getElementById("videoRemoveBtn").onclick = function () {
+    if (selVideo && selVideo.url) URL.revokeObjectURL(selVideo.url);
+    selVideo = null;
+    document.getElementById("videoName").textContent = "";
+    renderVideoPreview();
+  };
+}
+function resetComposeMedia() {
+  selImages.forEach(function (im) { if (im.url) URL.revokeObjectURL(im.url); });
+  selImages = [];
+  if (selVideo && selVideo.url) URL.revokeObjectURL(selVideo.url);
+  selVideo = null;
+  var pv = document.getElementById("photoPreview"); if (pv) pv.innerHTML = "";
+  var vv = document.getElementById("videoPreview"); if (vv) vv.innerHTML = "";
+  var fn = document.getElementById("fileName"); if (fn) fn.textContent = "";
+  var vn = document.getElementById("videoName"); if (vn) vn.textContent = "";
+  var ph = document.getElementById("photo"); if (ph) ph.value = "";
+  var vd = document.getElementById("video"); if (vd) vd.value = "";
+  hideVideoProgress();
+}
+/* 读视频时长（不播放，只读 metadata） */
+function loadVideoMeta(file) {
+  return new Promise(function (resolve) {
+    var url = URL.createObjectURL(file);
+    var v = document.createElement("video");
+    v.preload = "metadata";
+    v.muted = true;
+    var done = false;
+    function finish(ok) {
+      if (done) return; done = true;
+      var d = v.duration;
+      URL.revokeObjectURL(url);
+      resolve(ok ? { duration: d } : null);
+    }
+    v.onloadedmetadata = function () { finish(true); };
+    v.onerror = function () { finish(false); };
+    v.src = url;
+    setTimeout(function () { finish(false); }, 15000);
+  });
+}
+/* 实时重编码压缩：边播边录，目标 5MB；码率按时长算，上限 2.5Mbps、下限 0.5Mbps，音频 128kbps */
+function recordVideo(file, videoBitsPerSecond, duration) {
+  return new Promise(function (resolve, reject) {
+    var url = URL.createObjectURL(file);
+    var v = document.createElement("video");
+    v.muted = true;
+    v.playsInline = true;
+    v.preload = "auto";
+    var settled = false;
+    function finish(blob) { if (settled) return; settled = true; URL.revokeObjectURL(url); resolve(blob); }
+    function fail(msg) { if (settled) return; settled = true; URL.revokeObjectURL(url); reject(new Error(msg)); }
+    v.onloadedmetadata = function () {
+      try {
+        if (!window.MediaRecorder) { fail("这台设备不支持视频压缩"); return; }
+        var stream = v.captureStream ? v.captureStream() : (v.mozCaptureStream ? v.mozCaptureStream() : null);
+        if (!stream) { fail("这台设备不支持视频压缩"); return; }
+        var mime = "";
+        var cands = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"];
+        for (var i = 0; i < cands.length; i++) {
+          if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(cands[i])) { mime = cands[i]; break; }
+        }
+        var chunks = [];
+        var opts = { videoBitsPerSecond: videoBitsPerSecond, audioBitsPerSecond: 128000 };
+        if (mime) opts.mimeType = mime;
+        var rec = new MediaRecorder(stream, opts);
+        rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+        rec.onstop = function () { finish(new Blob(chunks, { type: rec.mimeType || "video/webm" })); };
+        rec.onerror = function () { fail("视频压缩失败"); };
+        var progTimer = setInterval(function () {
+          var pct = duration > 0 ? Math.min(100, Math.round(v.currentTime / duration * 100)) : 0;
+          showVideoProgress("视频压缩中 " + pct + "%…");
+        }, 300);
+        v.onended = function () {
+          clearInterval(progTimer);
+          try { if (rec.state !== "inactive") rec.stop(); } catch (e) { fail("视频压缩失败"); }
+        };
+        rec.start(500);
+        var p = v.play();
+        if (p && p.catch) p.catch(function () { clearInterval(progTimer); fail("视频无法播放，换一个试试"); });
+        /* 保险：ended 没触发时，按时长 + 2 秒兜底停录 */
+        setTimeout(function () {
+          clearInterval(progTimer);
+          try { if (rec.state !== "inactive") rec.stop(); } catch (e) {}
+        }, (duration + 2) * 1000);
+      } catch (e) { fail("视频压缩失败"); }
+    };
+    v.onerror = function () { fail("视频读取失败，换一个试试"); };
+    v.src = url;
+  });
+}
+document.getElementById("video").onchange = async function () {
+  var file = (this.files || [])[0];
+  this.value = "";
+  if (!file) return;
+  if (file.size > VIDEO_MAX_FILE) { toast("视频太大了，请选 200MB 以内的"); return; }
+  if (videoCompressing) { toast("视频正在压缩，请稍等"); return; }
+  var btn = document.getElementById("submitBtn");
+  try {
+    videoCompressing = true;
+    if (btn) btn.disabled = true;
+    showVideoProgress("正在读取视频…");
+    var meta = await loadVideoMeta(file);
+    if (!meta || !meta.duration || !isFinite(meta.duration) || meta.duration <= 0) throw new Error("视频读取失败，换一个试试");
+    if (meta.duration > VIDEO_MAX_SEC) { toast("视频太长了，请选 2 分钟以内的"); return; }
+    var vbr = Math.round(VIDEO_MAX_BYTES * 8 / meta.duration) - 128000; /* 总预算 5MB，留 128kbps 给音频 */
+    vbr = Math.max(500000, Math.min(2500000, vbr));
+    var blob = await recordVideo(file, vbr, meta.duration);
+    if (!blob) throw new Error("视频压缩失败");
+    if (blob.size > VIDEO_MAX_BYTES) { toast("还是超过 5MB，换个更短的视频试试"); return; }
+    if (selVideo && selVideo.url) URL.revokeObjectURL(selVideo.url);
+    var base = (file.name || "video").replace(/\.[^.]*$/, "") || "video";
+    selVideo = { file: blob, name: base + ".webm", type: blob.type || "video/webm", url: URL.createObjectURL(blob), size: blob.size };
+    renderVideoPreview();
+    document.getElementById("videoName").textContent = "视频 " + (blob.size / 1048576).toFixed(1) + "MB";
+  } catch (e) {
+    toast((e && e.message) || "视频压缩失败，可去掉视频直接发帖");
+  } finally {
+    videoCompressing = false;
+    hideVideoProgress();
+    if (btn) { btn.disabled = false; updateSubmitBtn(); }
+  }
 };
 /* ---------- 发帖草稿：边写边存，刷新/误触返回也不丢；发成功后清空 ---------- */
 function saveDraft() {
@@ -1475,7 +1695,7 @@ function restoreDraft() {
   if (d.content) contentEl.value = d.content;
   if (d.title) titleEl.value = d.title;
   var hint = document.getElementById("draftHint");
-  if (hint && (d.content || d.title)) { hint.style.display = "block"; setFormCollapsed(false); } /* 有草稿就自动展开表单 */
+  if (hint && (d.content || d.title)) hint.style.display = "block";
 }
 function clearDraft() {
   try { window.localStorage.removeItem("cb_draft"); } catch (e) {}
@@ -1681,7 +1901,7 @@ var feedOffset = 0;          /* 最新排序下已向服务端请求的帖子数
 var feedHasMore = false;     /* 服务端是否还有更多（最新排序） */
 var feedAllLoaded = false;   /* 最热排序/风采自荐：已一次拉全量 */
 function postsUrl(slug, limit, offset) {
-  return "/rest/v1/posts?select=id,section,title,content,image_url,author_name,is_anonymous,device_id,created_at&section=eq." + encodeURIComponent(slug) + "&order=created_at.desc&limit=" + limit + "&offset=" + offset;
+  return "/rest/v1/posts?select=id,section,title,content,image_url,image_urls,image_paths,video_url,video_path,author_name,is_anonymous,device_id,created_at&section=eq." + encodeURIComponent(slug) + "&order=created_at.desc&limit=" + limit + "&offset=" + offset;
 }
 async function loadFeed(slug, append) {
   var feed = document.getElementById("feed");
@@ -1795,6 +2015,20 @@ function setFeedView(mode) {
 }
 setFeedView(feedView); /* 打开时恢复上次选的视图，默认列表 */
 
+/* 帖子媒体：多图画廊（最多 5 张，点开放大走同一个灯箱）+ 单视频；老帖子只有单张 image_url 时按原来单图渲染 */
+function postMediaHtml(p) {
+  var html = "";
+  var urls = (p.image_urls && p.image_urls.length) ? p.image_urls : (p.image_url ? [p.image_url] : []);
+  if (urls.length > 1) {
+    html += '<div class="post-gallery">' + urls.map(function (u) { return imgTag(u); }).join("") + "</div>";
+  } else if (urls.length === 1) {
+    html += imgTag(urls[0]);
+  }
+  if (p.video_url) {
+    html += '<video class="post-video" src="' + esc(imgUrl(p.video_url)) + '" controls preload="metadata" playsinline></video>';
+  }
+  return html;
+}
 function postHtml(p, s, i, full) {
   var isAnon = !!p.is_anonymous;
   /* 匿名：只显示“匿名”，不显示头像姓名，也点不进主页；实名：显示主页头像+昵称，点头像/名字进主页 */
@@ -1803,7 +2037,7 @@ function postHtml(p, s, i, full) {
   var whoCls = isAnon ? "who anon" : "who prof";
   var whoAttr = isAnon ? "" : ' data-prof="' + esc(p.device_id || "") + '"';
   var title = p.title ? '<div class="post-title">' + esc(p.title) + '</div>' : "";
-  var img = p.image_url ? imgTag(p.image_url) : "";
+  var img = postMediaHtml(p);
   var liked = likedByMe[p.id];
   var isContest = s.slug === "contest";
   var likeLabel = isContest ? (liked ? "已投票" : "投票") : (liked ? "已点赞" : "点赞");
@@ -1940,6 +2174,7 @@ function containsBannedWord(text) {
 document.getElementById("submitBtn").onclick = async function () {
   var btn = this;
   if (!currentSection) return;
+  if (videoCompressing) { toast("视频正在压缩，请稍等"); return; }
   var content = document.getElementById("content").value.trim();
   var title = "";
   if (currentSection === "contest") {
@@ -1950,27 +2185,37 @@ document.getElementById("submitBtn").onclick = async function () {
   if (containsPrivacyInfo(content) && !confirm("内容中可能包含手机号/身份证号等隐私信息，确认要发布吗？")) return;
   if (containsBannedWord(content)) { toast("内容包含敏感词，请修改后再发布"); return; }
   var name = isAnon ? null : (document.getElementById("authorName").value.trim() || (myProfile && myProfile.display_name) || "实名同学");
-  var file = document.getElementById("photo").files[0];
   btn.disabled = true; btn.classList.add("loading"); btn.textContent = "发布中…";
   try {
-    var imageUrl = null, imagePath = null;
-    if (file) {
-      btn.textContent = "图片压缩中…";
-      var up0 = await compressImage(file); /* v1.2: 先压到 500KB 以内再上传 */
-      btn.textContent = "发布中…";
-      var upFile = up0.blob, upName = up0.name, upType = up0.type;
-      imagePath = Date.now() + "_" + Math.random().toString(36).slice(2) + "_" + upName.replace(/[^\w.\-]+/g, "_");
+    var imageUrls = [], imagePaths = [];
+    for (var i = 0; i < selImages.length; i++) {
+      var im = selImages[i];
+      var imagePath = Date.now() + "_" + Math.random().toString(36).slice(2) + "_" + im.name.replace(/[^\w.\-]+/g, "_");
       var up = await apiFetch("/storage/v1/object/confession-images/" + imagePath, {
         method: "POST",
-        headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY, "Content-Type": upType || "application/octet-stream" },
-        body: upFile
+        headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY, "Content-Type": im.type || "application/octet-stream" },
+        body: im.file
       });
       if (!up.ok) throw new Error("照片上传失败，请重试");
-      imageUrl = (proxyOn() ? PROXY_URL : SUPABASE_URL) + "/storage/v1/object/public/confession-images/" + imagePath;
+      imagePaths.push(imagePath);
+      imageUrls.push((proxyOn() ? PROXY_URL : SUPABASE_URL) + "/storage/v1/object/public/confession-images/" + imagePath);
+    }
+    var videoUrl = null, videoPath = null;
+    if (selVideo) {
+      videoPath = Date.now() + "_" + Math.random().toString(36).slice(2) + "_" + selVideo.name.replace(/[^\w.\-]+/g, "_");
+      var upv = await apiFetch("/storage/v1/object/confession-images/" + videoPath, {
+        method: "POST",
+        headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY, "Content-Type": selVideo.type || "video/webm" },
+        body: selVideo.file
+      });
+      if (!upv.ok) throw new Error("视频上传失败，请重试");
+      videoUrl = (proxyOn() ? PROXY_URL : SUPABASE_URL) + "/storage/v1/object/public/confession-images/" + videoPath;
     }
     var r = await apiPost("/functions/v1/submit-post", {
       section: currentSection, title: title || null, content: content,
-      image_url: imageUrl, image_path: imagePath,
+      image_url: imageUrls[0] || null, image_path: imagePaths[0] || null,
+      image_urls: imageUrls.length ? imageUrls : null, image_paths: imagePaths.length ? imagePaths : null,
+      video_url: videoUrl, video_path: videoPath,
       author_name: name, is_anonymous: isAnon, device_id: deviceId
     });
     if (!r || r.error) throw new Error((r && r.error) || "发布失败");
@@ -1978,12 +2223,12 @@ document.getElementById("submitBtn").onclick = async function () {
     addMyPost(r.id);
     document.getElementById("content").value = "";
     document.getElementById("postTitle").value = "";
-    document.getElementById("photo").value = "";
-    document.getElementById("fileName").textContent = "";
+    resetComposeMedia(); /* 发成功了，选的图/视频清空 */
     clearDraft(); /* 发成功了，草稿清空 */
     toast("发布成功");
     maybeShowRecoveryHint(); /* 首次发帖成功后提醒保存恢复码 */
-    loadFeed(currentSection);
+    var slug = currentSection;
+    window.location.hash = "#/s/" + slug; /* 回板块页并刷新列表 */
   } catch (e) { toast(e.message || "发布失败，请重试"); }
   btn.disabled = false; btn.classList.remove("loading"); updateSubmitBtn();
 };
@@ -2091,6 +2336,22 @@ async function doReport(id, reason, chip) {
   } catch (e) { toast("举报失败，请重试"); chip.disabled = false; }
 }
 
+/* 删帖后尽力清理 storage 里的媒体（image_path / image_paths / video_path；匿名删除可能被拒，失败也不影响删帖，孤儿文件由每月 1 号清库处理） */
+async function cleanupPostMedia(postId) {
+  try {
+    var rows = await apiGet("/rest/v1/posts?select=image_path,image_paths,video_path&id=eq." + postId + "&limit=1");
+    var pr = rows && rows[0];
+    if (!pr) return;
+    var paths = [];
+    if (pr.image_path) paths.push(pr.image_path);
+    if (pr.image_paths) pr.image_paths.forEach(function (x) { if (x && paths.indexOf(x) < 0) paths.push(x); });
+    if (pr.video_path) paths.push(pr.video_path);
+    paths.forEach(function (pa) {
+      apiFetch("/storage/v1/object/confession-images/" + pa, { method: "DELETE", headers: authHeaders() }).catch(function () {});
+    });
+  } catch (e) {}
+}
+
 async function doDelete(btn) {
   var id = btn.getAttribute("data-id");
   if (btn.getAttribute("data-confirm") !== "1") {
@@ -2104,6 +2365,7 @@ async function doDelete(btn) {
     var r = await apiPost("/rest/v1/rpc/delete_own_post", { p_post_id: id, p_device_id: deviceId });
     var ok = (r === true) || (r && (r.data === true || r === 1));
     if (!ok) throw new Error("删除失败");
+    cleanupPostMedia(id); /* 尽力清掉该帖的图片/视频文件 */
     toast("已删除");
     if (currentSection) loadFeed(currentSection);
   } catch (e) { toast("删除失败，请重试"); btn.disabled = false; }
@@ -2448,9 +2710,11 @@ document.getElementById("adminList").addEventListener("click", async function (e
   try {
     if (act === "del") {
       await apiPost("/rest/v1/rpc/admin_delete_post", { p_token: adminToken, p_post_id: id });
+      cleanupPostMedia(id); /* 尽力清掉该帖的图片/视频文件 */
       toast("已删除该帖子");
     } else if (act === "ban") {
       await apiPost("/rest/v1/rpc/admin_delete_post", { p_token: adminToken, p_post_id: id });
+      cleanupPostMedia(id); /* 尽力清掉该帖的图片/视频文件 */
       var ok = await apiPost("/rest/v1/rpc/admin_ban_device", { p_token: adminToken, p_post_id: id, p_hours: 24 });
       if (ok) { toast("已删帖，该设备已封禁 24 小时"); } else { toast("已删帖，但封禁失败"); }
     } else {
