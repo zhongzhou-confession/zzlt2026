@@ -437,13 +437,16 @@ footer { text-align: center; font-size: 12px; color: var(--text-3); padding: 16p
 .poll-opt { display: block; width: 100%; text-align: left; border: 1.5px solid var(--border); background: #fff; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; font-size: 14px; font-family: inherit; }
 .poll-opt:last-child { margin-bottom: 0; }
 .poll-opt:hover { border-color: var(--primary); }
+.poll-opt:active { transform: scale(.985); }
 .poll-opt.voted { border-color: var(--primary); background: var(--primary-soft); }
-.poll-opt:disabled { opacity: .6; cursor: not-allowed; }
+.poll-opt:disabled { cursor: not-allowed; }
+.poll-opt:disabled:not(.voted) { opacity: .55; }
+.poll-opt:disabled.voted { opacity: 1; }
 .poll-opt-txt { display: block; font-weight: 600; word-break: break-word; }
 .poll-voted-tag { color: var(--primary); font-size: 12px; }
 .poll-opt-count { display: block; font-size: 12px; color: var(--text-3); margin-top: 2px; }
 .poll-bar { display: block; height: 6px; border-radius: 99px; background: var(--bg); margin-top: 6px; overflow: hidden; }
-.poll-bar i { display: block; height: 100%; background: var(--primary); border-radius: 99px; }
+.poll-bar i { display: block; height: 100%; background: var(--primary); border-radius: 99px; transition: width .35s ease; }
 .gaokao-count { font-size: 12px; color: var(--text-3); text-align: center; padding: 0 0 10px; }
 .poll-input-row { display: flex; gap: 8px; align-items: center; }
 .poll-input-row + .poll-input-row { margin-top: 8px; }
@@ -2258,17 +2261,18 @@ function pollBoxHtml(pid) {
   var total = votes.length;
   var myVote = null;
   votes.forEach(function (v) { if (v.device_id === deviceId) myVote = v.option_id; });
+  var voted = myVote !== null; /* 投过票就定死，不能再点别的选项 */
   var rows = opts.map(function (o) {
     var c = 0;
     votes.forEach(function (v) { if (v.option_id === o.id) c++; });
     var pct = total > 0 ? Math.round(c / total * 100) : 0;
-    var voted = myVote === o.id;
-    return '<button class="poll-opt' + (voted ? " voted" : "") + '" data-poll-vote="' + pid + '" data-opt="' + o.id + '" type="button">' +
-      '<span class="poll-opt-txt">' + esc(o.option_text) + (voted ? ' <span class="poll-voted-tag">已投</span>' : "") + '</span>' +
+    var isMine = myVote === o.id;
+    return '<button class="poll-opt' + (isMine ? " voted" : "") + '"' + (voted ? " disabled" : "") + ' data-poll-vote="' + pid + '" data-opt="' + o.id + '" type="button">' +
+      '<span class="poll-opt-txt">' + esc(o.option_text) + (isMine ? ' <span class="poll-voted-tag">已投</span>' : "") + '</span>' +
       '<span class="poll-opt-count">' + c + ' 票 · ' + pct + '%</span>' +
       '<span class="poll-bar"><i style="width:' + pct + '%"></i></span></button>';
   }).join("");
-  return '<div class="poll-box" data-pollbox="' + pid + '"><div class="poll-title">投票 · 共 ' + total + ' 票，点击选项即可投票</div>' + rows + '</div>';
+  return '<div class="poll-box" data-pollbox="' + pid + '"><div class="poll-title">' + (voted ? "已投票" : "投票") + ' · 共 ' + total + ' 票' + (voted ? "" : "，点击选项即可投票") + '</div>' + rows + '</div>';
 }
 function postHtml(p, s, i, full) {
   var isAnon = !!p.is_anonymous;
@@ -2742,17 +2746,32 @@ async function doFeature(btn) {
 async function doPollVote(btn) {
   var pid = btn.getAttribute("data-poll-vote");
   var oid = btn.getAttribute("data-opt");
-  btn.disabled = true;
+  var cur = pollVotesByPost[pid] || [];
+  if (cur.some(function (v) { return v.device_id === deviceId; })) return; /* 已投过就不再投 */
+  /* 乐观更新：先记票重绘，点了马上就有反应，不用等网络 */
+  pollVotesByPost[pid] = cur.filter(function (v) { return v.device_id !== deviceId; });
+  pollVotesByPost[pid].push({ post_id: pid, option_id: oid, device_id: deviceId });
+  var box = document.querySelector('[data-pollbox="' + pid + '"]');
+  if (box) box.outerHTML = pollBoxHtml(pid);
+  var ok = false;
   try {
-    var ok = await apiPost("/rest/v1/rpc/vote_poll", { p_post_id: pid, p_option_id: oid, p_device_id: deviceId });
-    if (!ok) throw new Error("投票失败");
-    var votes = pollVotesByPost[pid] || [];
-    pollVotesByPost[pid] = votes.filter(function (v) { return v.device_id !== deviceId; });
-    pollVotesByPost[pid].push({ post_id: pid, option_id: oid, device_id: deviceId });
-    var box = document.querySelector('[data-pollbox="' + pid + '"]');
-    if (box) box.outerHTML = pollBoxHtml(pid);
-    toast("投票成功");
-  } catch (e) { toast("投票失败，请重试"); btn.disabled = false; }
+    ok = await apiPost("/rest/v1/rpc/vote_poll", { p_post_id: pid, p_option_id: oid, p_device_id: deviceId });
+  } catch (e) { ok = false; }
+  if (ok) return; /* 成功：本地已是最新，无需再动 */
+  /* 失败：重新拉一次该帖投票，同步真实状态 */
+  try {
+    var fresh = await apiGet("/rest/v1/poll_votes?select=post_id,option_id,device_id&post_id=eq." + pid + "&limit=1000");
+    pollVotesByPost[pid] = fresh || [];
+    var box2 = document.querySelector('[data-pollbox="' + pid + '"]');
+    if (box2) box2.outerHTML = pollBoxHtml(pid);
+    var mine = (pollVotesByPost[pid] || []).some(function (v) { return v.device_id === deviceId; });
+    toast(mine ? "你已经投过票了，不能改票" : "投票失败，请重试");
+  } catch (e2) {
+    pollVotesByPost[pid] = (pollVotesByPost[pid] || []).filter(function (v) { return v.device_id !== deviceId; });
+    var box3 = document.querySelector('[data-pollbox="' + pid + '"]');
+    if (box3) box3.outerHTML = pollBoxHtml(pid);
+    toast("投票失败，请重试");
+  }
 }
 
 /* ---------- comments ---------- */
