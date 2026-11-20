@@ -1807,19 +1807,31 @@ document.getElementById("video").onchange = async function () {
     videoCompressing = true;
     if (btn) btn.disabled = true;
     showVideoProgress("正在读取视频…");
-    var meta = await loadVideoMeta(file);
-    if (!meta || !meta.duration || !isFinite(meta.duration) || meta.duration <= 0) throw new Error("视频读取失败，换一个试试");
-    if (meta.duration > VIDEO_MAX_SEC) { toast("视频太长了，请选 2 分钟以内的"); return; }
-    var vbr = Math.round(VIDEO_MAX_BYTES * 8 / meta.duration) - 128000; /* 总预算 5MB，留 128kbps 给音频 */
-    vbr = Math.max(500000, Math.min(2500000, vbr));
-    var blob = await recordVideo(file, vbr, meta.duration);
-    if (!blob) throw new Error("视频压缩失败");
-    if (blob.size > VIDEO_MAX_BYTES) { toast("还是超过 5MB，换个更短的视频试试"); return; }
+    var usedOriginal = false, blob = null, meta = null;
+    try {
+      meta = await loadVideoMeta(file);
+      if (!meta || !meta.duration || !isFinite(meta.duration) || meta.duration <= 0) throw new Error("视频读取失败");
+      if (meta.duration > VIDEO_MAX_SEC) { toast("视频太长了，请选 2 分钟以内的"); return; }
+      var vbr = Math.round(VIDEO_MAX_BYTES * 8 / meta.duration) - 128000; /* 总预算 5MB，留 128kbps 给音频 */
+      vbr = Math.max(500000, Math.min(2500000, vbr));
+      blob = await recordVideo(file, vbr, meta.duration);
+      if (!blob) throw new Error("视频压缩失败");
+      if (blob.size > VIDEO_MAX_BYTES) { toast("还是超过 5MB，换个更短的视频试试"); return; }
+    } catch (e0) {
+      /* 压缩失败（多见于 iPhone MOV/HEVC 或微信内置浏览器不支持的格式）：原视频 ≤5MB 时直接用原文件上传 */
+      if (file.size <= VIDEO_MAX_BYTES) { usedOriginal = true; blob = file; }
+      else throw e0;
+    }
     if (selVideo && selVideo.url) URL.revokeObjectURL(selVideo.url);
     var base = (file.name || "video").replace(/\.[^.]*$/, "") || "video";
-    selVideo = { file: blob, name: base + ".webm", type: blob.type || "video/webm", url: URL.createObjectURL(blob), size: blob.size };
+    if (usedOriginal) {
+      selVideo = { file: file, name: file.name || "video.mp4", type: file.type || "video/mp4", url: URL.createObjectURL(file), size: file.size };
+      toast("这个格式压不了，已直接用原视频上传");
+    } else {
+      selVideo = { file: blob, name: base + ".webm", type: blob.type || "video/webm", url: URL.createObjectURL(blob), size: blob.size };
+    }
     renderVideoPreview();
-    document.getElementById("videoName").textContent = "视频 " + (blob.size / 1048576).toFixed(1) + "MB";
+    document.getElementById("videoName").textContent = "视频 " + (selVideo.size / 1048576).toFixed(1) + "MB";
   } catch (e) {
     toast((e && e.message) || "视频压缩失败，可去掉视频直接发帖");
   } finally {
